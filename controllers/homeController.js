@@ -15,7 +15,11 @@ export const getHome = async (req) => {
                          startheading: "Crafting",
                          midheading: "Intelligent",
                          endheading: "Experiences",
-                         description: "We design user-centric digital products that convert.",
+                         points: [
+                              "We design user-centric digital products that convert.",
+                              "Collaborative hands-on design learning environment.",
+                              "Gain real world industry-relevant skills."
+                         ],
                          buttonName: "Book a Call",
                          bgImage: ""
                     }],

@@ -7,7 +7,10 @@ const homeSchema = new mongoose.Schema({
                startheading: String,
                midheading: String,
                endheading: String,
-               description: String,
+               points: {
+                    type: [String],
+                    default: []
+               },
                buttonName: String,
                bgImage: String
           }],
