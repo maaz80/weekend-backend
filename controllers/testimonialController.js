@@ -21,12 +21,9 @@ export const createTestimonial = async (req) => {
           const formData = await req.formData();
           const quote = formData.get("quote");
           const name = formData.get("name");
-          const role = formData.get("role");
-
           const testimonial = new Testimonial({
                quote,
-               name,
-               role
+               name
           });
 
           await testimonial.save();
@@ -44,8 +41,7 @@ export const updateTestimonial = async (req, { params }) => {
           
           const updateData = {
                quote: formData.get("quote"),
-               name: formData.get("name"),
-               role: formData.get("role")
+               name: formData.get("name")
           };
 
           const testimonial = await Testimonial.findByIdAndUpdate(
