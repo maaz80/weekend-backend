@@ -23,6 +23,7 @@ import * as otpController from "../controllers/otpController.js";
 import * as pageSEOController from "../controllers/pageSEOController.js";
 import * as policyController from "../controllers/policyController.js";
 import * as testimonialController from "../controllers/testimonialController.js";
+import * as leadController from "../controllers/leadController.js";
 
 import { v2 as cloudinary } from "cloudinary";
 import Courses from "../models/Courses.js";
@@ -219,6 +220,10 @@ router.get("/testimonials", makeExpressRoute(testimonialController.getTestimonia
 router.post("/testimonials", requireAdminForWrites, upload.any(), makeExpressRoute(testimonialController.createTestimonial));
 router.put("/testimonials/:id", requireAdminForWrites, upload.any(), makeExpressRoute(testimonialController.updateTestimonial));
 router.delete("/testimonials/:id", requireAdminForWrites, makeExpressRoute(testimonialController.deleteTestimonial));
+
+// 18. Leads
+router.post("/leads", makeExpressRoute(leadController.submitLead));
+router.get("/leads", requireAdminForWrites, makeExpressRoute(leadController.getLeads));
 
 // 16. Cloudinary Signature
 router.get("/cloudinary-signature", (req, res) => {

@@ -13,23 +13,20 @@ const coursesSchema = new mongoose.Schema({
           seodescription:String,
           slug: String,
           author: String,
-          courselength: String,
-          totalstudents: String,
-          levels: String,
-          totallessons: String,
           startdate: String,
-          duration: String,
           category: String,
           overview: String,
+          promoTitle: String,
+          promoDescription: String,
+          promoBenefits: String,
+          brochureTitle: String,
+          brochureSubtext: String,
+          brochurePhones: String,
+          brochureLink: String,
           chapter:[ {
                chaptername: String,
-               totallessons: String,
                lessons: [{
-                    lessonname: String,
-                    video: {
-                         videourl: String,
-                         duration: String
-                    }
+                    lessonname: String
                }]
           }],
           faq: {
@@ -41,6 +38,36 @@ const coursesSchema = new mongoose.Schema({
                items: [{
                     ques: String,
                     ans: String
+               }]
+          },
+          shortTerm: {
+               title: String,
+               description: String,
+               items: [{
+                    title: String,
+                    description: String,
+                    duration: String,
+                    iconText: String
+               }]
+          },
+          caseStudies: {
+               title: String,
+               description: String,
+               buttonText: String,
+               items: [{
+                    image: String,
+                    alt: String,
+                    link: String
+               }]
+          },
+          careerDomains: {
+               title: String,
+               description: String,
+               items: [{
+                    name: String,
+                    link: String,
+                    iconName: String,
+                    color: String
                }]
           }
 

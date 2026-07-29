@@ -31,29 +31,84 @@ export const getCourses = async (req) => {
                               seodescription: "Learn modern UI/UX design practices using Figma. This course covers everything from wireframing to high-fidelity prototyping and design systems.",
                               slug: "figma-ui-ux-masterclass",
                               author: "Jane Doe",
-                              courselength: "12 Weeks",
-                              totalstudents: "1,200",
-                              levels: "All Levels",
-                              totallessons: "45",
                               startdate: "July 1, 2026",
-                              duration: "30h 45m",
                               category: "Design",
                               overview: "Learn modern UI/UX design practices using Figma. This course covers everything from wireframing to high-fidelity prototyping and design systems.",
+                              promoTitle: "UI UX Design Courses in Delhi at Affordable Fees",
+                              promoDescription: "The demand for skilled UI and UX designers has increased rapidly with the rise of digital experiences.\n\nAs a result, UI UX design courses are now more popular than ever. In Delhi, these programs are among the most in-demand career options in today’s time. Our UI/UX design institute has been providing industry-oriented training in these courses since its inception.",
+                              promoBenefits: "Training Since 2006, Small Batches for UX Design, Highly Experienced UX Faculty, 99% Hiring Rate, UX/UI Portfolio Development",
+                              brochureTitle: "Comprehensive Syllabus for UI UX Design Training",
+                              brochureSubtext: "Chart your path to a thriving career as a UI/UX designer. Explore our course brochure for an in-depth look at the syllabus training from the best UI UX Design Institute in Delhi. Download now.",
+                              brochurePhones: "+91 9911782350 or +91 9811818122",
+                              brochureLink: "https://example.com/brochure.pdf",
                               chapter: [
                                    {
                                         chaptername: "Introduction to Figma",
-                                        totallessons: "5",
                                         lessons: [
                                              {
-                                                  lessonname: "Figma Interface Tour",
-                                                  video: {
-                                                       videourl: "",
-                                                       duration: "10:15"
-                                                  }
+                                                  lessonname: "Figma Interface Tour"
                                              }
                                         ]
                                    }
-                              ]
+                              ],
+                              shortTerm: {
+                                   title: "Short-term UX Design Courses",
+                                   description: "Check out the short duration courses for building a strong foundation in UI & UX design.",
+                                   items: [
+                                        {
+                                             title: "Adobe XD Course",
+                                             description: "Adobe XD is a superb tool for UI and UX designers. It enables us for excellent designing, prototyping, and team collaborations. Best UX tool for users using Adobe software.",
+                                             duration: "DURATION: 01 MONTH",
+                                             iconText: "Xd"
+                                        },
+                                        {
+                                             title: "Figma Fundamentals",
+                                             description: "Learn how to build responsive layouts, reusable components, dynamic design systems and interactive high fidelity prototypes in Figma.",
+                                             duration: "DURATION: 02 WEEKS",
+                                             iconText: "Fg"
+                                        }
+                                   ]
+                              },
+                              caseStudies: {
+                                   title: "UX Case Studies by Our Students",
+                                   description: "Click and explore our students UX projects done in the institute in their courses.",
+                                   buttonText: "View All Works",
+                                   items: [
+                                        {
+                                             image: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
+                                             alt: "Case Study 1",
+                                             link: "#"
+                                        },
+                                        {
+                                             image: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
+                                             alt: "Case Study 2",
+                                             link: "#"
+                                        },
+                                        {
+                                             image: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
+                                             alt: "Case Study 3",
+                                             link: "#"
+                                        }
+                                   ]
+                              },
+                              careerDomains: {
+                                   title: "Explore More Career Domains",
+                                   description: "Discover ADMEC's diverse courses to continuously enhance your skills through diploma programs in various fields.",
+                                   items: [
+                                        { name: "Graphic Design", link: "#", iconName: "graphic", color: "#10B981" },
+                                        { name: "Web Design", link: "#", iconName: "web", color: "#2563EB" },
+                                        { name: "Post Production", link: "#", iconName: "post", color: "#9333EA" },
+                                        { name: "Data Analytics", link: "#", iconName: "analytics", color: "#701A75" },
+                                        { name: "CAD & Architecture", link: "#", iconName: "cad", color: "#854D0E" },
+                                        { name: "3D Animation", link: "#", iconName: "animation", color: "#0D9488" },
+                                        { name: "Web Development", link: "#", iconName: "code", color: "#1E3A8A" },
+                                        { name: "CAD Textile Design", link: "#", iconName: "textile", color: "#D97706" },
+                                        { name: "Software Development", link: "#", iconName: "software", color: "#16A34A" },
+                                        { name: "Digital Marketing", link: "#", iconName: "marketing", color: "#0891B2" },
+                                        { name: "Machine Learning & AI", link: "#", iconName: "ai", color: "#C026D3" },
+                                        { name: "Video Editing", link: "#", iconName: "video", color: "#DC2626" }
+                                   ]
+                              }
                          }
                     ],
                     card: {
@@ -97,7 +152,7 @@ export const updateCourses = async (req) => {
                updateData = dataStr ? JSON.parse(dataStr) : {};
                console.log("Parsed updateData Courses Count:", updateData.course?.length);
                
-               // Handle course images and videos
+               // Handle course images
                if (updateData.course && Array.isArray(updateData.course)) {
                     for (let i = 0; i < updateData.course.length; i++) {
                          // Course Image
@@ -107,44 +162,15 @@ export const updateCourses = async (req) => {
                               updateData.course[i].image = await uploadToCloudinary(imageFile, "courses/images");
                               console.log(`Course image uploaded successfully: ${updateData.course[i].image}`);
                          }
-                         
-                         // Lesson Videos (checking if chapter is an array or legacy object)
-                         if (updateData.course[i].chapter) {
-                              if (Array.isArray(updateData.course[i].chapter)) {
-                                   for (let chIdx = 0; chIdx < updateData.course[i].chapter.length; chIdx++) {
-                                        const chapter = updateData.course[i].chapter[chIdx];
-                                        if (chapter && chapter.lessons && Array.isArray(chapter.lessons)) {
-                                             for (let j = 0; j < chapter.lessons.length; j++) {
-                                                  const videoKey = `courseVideo_${i}_${chIdx}_${j}`;
-                                                  const videoFile = formData.get(videoKey);
-                                                  if (videoFile) {
-                                                       console.log(`Found video file for key ${videoKey}. File Name: ${videoFile.name}, Size: ${videoFile.size} bytes`);
-                                                       chapter.lessons[j].video = chapter.lessons[j].video || {};
-                                                       
-                                                       console.log(`Uploading video to Cloudinary for key ${videoKey}...`);
-                                                       const uploadedUrl = await uploadToCloudinary(videoFile, "courses/videos");
-                                                       console.log(`Video uploaded successfully to URL: ${uploadedUrl}`);
-                                                       
-                                                       chapter.lessons[j].video.videourl = uploadedUrl;
-                                                  }
-                                             }
-                                        }
-                                   }
-                              } else if (updateData.course[i].chapter.lessons) {
-                                   // Legacy single-chapter object fallback
-                                   for (let j = 0; j < updateData.course[i].chapter.lessons.length; j++) {
-                                        const videoKey = `courseVideo_${i}_${j}`;
-                                        const videoFile = formData.get(videoKey);
-                                        if (videoFile) {
-                                             console.log(`Found video file for key ${videoKey}. File Name: ${videoFile.name}, Size: ${videoFile.size} bytes`);
-                                             updateData.course[i].chapter.lessons[j].video = updateData.course[i].chapter.lessons[j].video || {};
-                                             
-                                             console.log(`Uploading video to Cloudinary for key ${videoKey}...`);
-                                             const uploadedUrl = await uploadToCloudinary(videoFile, "courses/videos");
-                                             console.log(`Video uploaded successfully to URL: ${uploadedUrl}`);
-                                             
-                                             updateData.course[i].chapter.lessons[j].video.videourl = uploadedUrl;
-                                        }
+
+                         // Case studies images
+                         if (updateData.course[i].caseStudies && Array.isArray(updateData.course[i].caseStudies.items)) {
+                              for (let j = 0; j < updateData.course[i].caseStudies.items.length; j++) {
+                                   const caseStudyFile = formData.get(`course_${i}_caseStudy_${j}`);
+                                   if (caseStudyFile) {
+                                        console.log(`Uploading case study image for course ${i}, item ${j}...`);
+                                        updateData.course[i].caseStudies.items[j].image = await uploadToCloudinary(caseStudyFile, "courses/casestudies");
+                                        console.log(`Case study image uploaded successfully: ${updateData.course[i].caseStudies.items[j].image}`);
                                    }
                               }
                          }
