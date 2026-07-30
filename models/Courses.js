@@ -69,8 +69,8 @@ const coursesSchema = new mongoose.Schema({
                     iconName: String,
                     color: String
                }]
-          }
-
+          },
+          schemas: [String]
      }],
      card: {
           title: String,

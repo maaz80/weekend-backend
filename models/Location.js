@@ -31,7 +31,8 @@ const locationItemSchema = new mongoose.Schema({
                ques: String,
                ans: String
           }]
-     }
+     },
+     schemas: [String]
 });
 
 const locationSchema = new mongoose.Schema({

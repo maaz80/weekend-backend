@@ -2,6 +2,7 @@ import Blog from "../models/Blog.js";
 import connectDB from "../config/db.js";
 import { uploadToCloudinary } from "../config/cloudinary.js";
 import { NextResponse } from "next/server";
+import { triggerFrontendBuild } from "../services/deployService.js";
 
 // Slug generator
 const createSlug = (title) => {
@@ -107,6 +108,7 @@ export const updateBlogPage = async (req) => {
           if (updateData.blogs !== undefined) blogPage.blogs = updateData.blogs;
 
           await blogPage.save();
+          triggerFrontendBuild();
           return NextResponse.json(blogPage);
      } catch (err) {
           return NextResponse.json({ error: err.message }, { status: 500 });
@@ -197,6 +199,9 @@ export const createBlog = async (req) => {
           const featuredVal = formData.get("featured");
           const featured = featuredVal === "true" || featuredVal === true;
 
+          const schemasStr = formData.get("schemas");
+          const schemas = schemasStr ? JSON.parse(schemasStr) : [];
+
           const newBlogItem = {
                image: imageUrl,
                alt: alt || title,
@@ -209,7 +214,8 @@ export const createBlog = async (req) => {
                content: content,
                featured: featured,
                faq: faq,
-               author: author
+               author: author,
+               schemas: schemas
           };
 
           blogPage.blogs.push(newBlogItem);
@@ -217,6 +223,7 @@ export const createBlog = async (req) => {
 
           // Return the newly created blog item (with its assigned _id)
           const createdBlog = blogPage.blogs[blogPage.blogs.length - 1];
+          triggerFrontendBuild();
           return NextResponse.json(createdBlog);
      } catch (error) {
           return NextResponse.json({ error: error.message }, { status: 500 });
@@ -259,6 +266,11 @@ export const updateBlog = async (req, { params }) => {
           const faqStr = formData.get("faq");
           if (faqStr) {
                existingBlog.faq = JSON.parse(faqStr);
+          }
+
+          const schemasStr = formData.get("schemas");
+          if (schemasStr) {
+               existingBlog.schemas = JSON.parse(schemasStr);
           }
 
           const authorStr = formData.get("author");
@@ -313,6 +325,7 @@ export const updateBlog = async (req, { params }) => {
           blogPage.markModified('blogs');
           await blogPage.save();
 
+          triggerFrontendBuild();
           return NextResponse.json(blogPage.blogs[blogIndex]);
      } catch (error) {
           return NextResponse.json({ error: error.message }, { status: 500 });
@@ -337,6 +350,7 @@ export const deleteBlog = async (req, { params }) => {
           blogPage.blogs.splice(blogIndex, 1);
           await blogPage.save();
 
+          triggerFrontendBuild();
           return NextResponse.json({ message: "Blog post deleted successfully" });
      } catch (err) {
           return NextResponse.json({ error: err.message }, { status: 500 });

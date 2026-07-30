@@ -45,7 +45,8 @@ const blogSchema = new mongoose.Schema({
                twitter: String,
                linkedin: String,
                updatedDate: String
-          }
+          },
+          schemas: [String]
      }]
 
 }, { timestamps: true });

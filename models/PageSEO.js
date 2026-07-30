@@ -13,7 +13,11 @@ const pageSEOSchema = new mongoose.Schema({
      description: {
           type: String,
           trim: true
-     }
+     },
+     schemas: [{
+          type: String,
+          trim: true
+     }]
 }, { timestamps: true });
 
 const PageSEO = mongoose.models.PageSEO || mongoose.model("PageSEO", pageSEOSchema);

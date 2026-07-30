@@ -194,7 +194,8 @@ export const addItem = async (req, { params }) => {
                     endheading: parsedData.relatedBlogs?.endheading || parsedData.relatedEnd || "",
                     description: parsedData.relatedBlogs?.description || parsedData.relatedDesc || ""
                },
-               faq: parsedData.faq || { title: "", startheading: "", midheading: "", endheading: "", description: "", items: [] }
+               faq: parsedData.faq || { title: "", startheading: "", midheading: "", endheading: "", description: "", items: [] },
+               schemas: parsedData.schemas || []
           };
 
           location.items.push(newItem);
@@ -303,7 +304,8 @@ export const updateItem = async (req, { params }) => {
                     endheading: parsedData.relatedBlogs?.endheading || parsedData.relatedEnd || location.items[itemIndex].relatedBlogs?.endheading || "",
                     description: parsedData.relatedBlogs?.description || parsedData.relatedDesc || location.items[itemIndex].relatedBlogs?.description || ""
                },
-               faq: parsedData.faq !== undefined ? parsedData.faq : location.items[itemIndex].faq
+               faq: parsedData.faq !== undefined ? parsedData.faq : location.items[itemIndex].faq,
+               schemas: parsedData.schemas !== undefined ? parsedData.schemas : location.items[itemIndex].schemas || []
           };
 
           location.items[itemIndex] = updatedItem;
