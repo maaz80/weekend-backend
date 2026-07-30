@@ -36,6 +36,15 @@ const blogSchema = new mongoose.Schema({
                     ques: String,
                     ans: String
                }]
+          },
+          author: {
+               name: String,
+               designation: String,
+               bio: String,
+               avatar: String,
+               twitter: String,
+               linkedin: String,
+               updatedDate: String
           }
      }]
 

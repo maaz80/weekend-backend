@@ -159,12 +159,20 @@ export const createBlog = async (req) => {
           // FAQ is sent as serialized JSON object containing meta and items
           const faqStr = formData.get("faq");
           const faq = faqStr ? JSON.parse(faqStr) : { title: "", startheading: "", midheading: "", endheading: "", description: "", items: [] };
+
+          // Author is sent as serialized JSON object
+          const authorStr = formData.get("author");
+          const author = authorStr ? JSON.parse(authorStr) : {};
           
           const imageFile = formData.get("image");
           let imageUrl = "";
           if (imageFile) {
                imageUrl = await uploadToCloudinary(imageFile, "blogs");
           }
+
+          const options = { month: 'short', day: 'numeric', year: 'numeric' };
+          author.updatedDate = `Updated ${new Date().toLocaleDateString('en-US', options)}`;
+          delete author.avatar; // ensure no custom avatar is saved
 
           // Slug generation
           const customSlug = formData.get("slug");
@@ -200,7 +208,8 @@ export const createBlog = async (req) => {
                read: read || "5 min read",
                content: content,
                featured: featured,
-               faq: faq
+               faq: faq,
+               author: author
           };
 
           blogPage.blogs.push(newBlogItem);
@@ -251,6 +260,17 @@ export const updateBlog = async (req, { params }) => {
           if (faqStr) {
                existingBlog.faq = JSON.parse(faqStr);
           }
+
+          const authorStr = formData.get("author");
+          if (authorStr) {
+               const author = JSON.parse(authorStr);
+               existingBlog.author = { ...existingBlog.author?.toObject?.() || existingBlog.author || {}, ...author };
+          }
+
+          // Automatically set/update the updatedDate to current date (e.g. Jul 30, 2026)
+          if (!existingBlog.author) existingBlog.author = {};
+          const options = { month: 'short', day: 'numeric', year: 'numeric' };
+          existingBlog.author.updatedDate = `Updated ${new Date().toLocaleDateString('en-US', options)}`;
           
           if (title) existingBlog.title = title;
           if (alt !== null && alt !== undefined) existingBlog.alt = alt;
