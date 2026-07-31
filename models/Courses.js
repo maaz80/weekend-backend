@@ -19,6 +19,7 @@ const coursesSchema = new mongoose.Schema({
           promoTitle: String,
           promoDescription: String,
           promoBenefits: String,
+          promoSocialBottomContent: String,
           brochureTitle: String,
           brochureSubtext: String,
           brochurePhones: String,

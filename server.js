@@ -19,7 +19,7 @@ app.use(helmet({
 
 // CORS Configuration
 const allowedOrigins = [
-     // "http://localhost:3000",
+     "http://localhost:3000",
      "https://weekend-ux-user.netlify.app",
      "https://weekend-ux-admin.netlify.app",
 ].filter(Boolean);
