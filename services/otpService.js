@@ -51,7 +51,7 @@ export const generateAndSendOTP = async (phone, email) => {
           return { success: true, message: "OTP sent to your email" };
      } catch (error) {
           console.error("Error sending OTP:", error);
-          throw new Error("Failed to send OTP");
+          throw new Error(`Failed to send OTP: ${error.message || "Unknown error"}`);
      }
 };
 
