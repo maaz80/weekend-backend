@@ -68,46 +68,6 @@ export const getCourses = async (req) => {
                                              iconText: "Fg"
                                         }
                                    ]
-                              },
-                              caseStudies: {
-                                   title: "UX Case Studies by Our Students",
-                                   description: "Click and explore our students UX projects done in the institute in their courses.",
-                                   buttonText: "View All Works",
-                                   items: [
-                                        {
-                                             image: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
-                                             alt: "Case Study 1",
-                                             link: "#"
-                                        },
-                                        {
-                                             image: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
-                                             alt: "Case Study 2",
-                                             link: "#"
-                                        },
-                                        {
-                                             image: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
-                                             alt: "Case Study 3",
-                                             link: "#"
-                                        }
-                                   ]
-                              },
-                              careerDomains: {
-                                   title: "Explore More Career Domains",
-                                   description: "Discover ADMEC's diverse courses to continuously enhance your skills through diploma programs in various fields.",
-                                   items: [
-                                        { name: "Graphic Design", link: "#", iconName: "graphic", color: "#10B981" },
-                                        { name: "Web Design", link: "#", iconName: "web", color: "#2563EB" },
-                                        { name: "Post Production", link: "#", iconName: "post", color: "#9333EA" },
-                                        { name: "Data Analytics", link: "#", iconName: "analytics", color: "#701A75" },
-                                        { name: "CAD & Architecture", link: "#", iconName: "cad", color: "#854D0E" },
-                                        { name: "3D Animation", link: "#", iconName: "animation", color: "#0D9488" },
-                                        { name: "Web Development", link: "#", iconName: "code", color: "#1E3A8A" },
-                                        { name: "CAD Textile Design", link: "#", iconName: "textile", color: "#D97706" },
-                                        { name: "Software Development", link: "#", iconName: "software", color: "#16A34A" },
-                                        { name: "Digital Marketing", link: "#", iconName: "marketing", color: "#0891B2" },
-                                        { name: "Machine Learning & AI", link: "#", iconName: "ai", color: "#C026D3" },
-                                        { name: "Video Editing", link: "#", iconName: "video", color: "#DC2626" }
-                                   ]
                               }
                          }
                     ],
@@ -122,12 +82,95 @@ export const getCourses = async (req) => {
                          midheading: "Latest",
                          endheading: "Articles",
                          description: "Read the latest blogs and articles from our industry leaders."
+                    },
+                    caseStudies: {
+                         title: "UX Case Studies by Our Students",
+                         description: "Click and explore our students UX projects done in the institute in their courses.",
+                         buttonText: "View All Works",
+                         items: [
+                              {
+                                   image: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
+                                   alt: "Case Study 1",
+                                   link: "#"
+                              },
+                              {
+                                   image: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
+                                   alt: "Case Study 2",
+                                   link: "#"
+                              },
+                              {
+                                   image: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
+                                   alt: "Case Study 3",
+                                   link: "#"
+                              }
+                         ]
+                    },
+                    careerDomains: {
+                         title: "Explore More Career Domains",
+                         description: "Discover ADMEC's diverse courses to continuously enhance your skills through diploma programs in various fields.",
+                         items: [
+                              { name: "Graphic Design", link: "#", iconName: "graphic", color: "#10B981" },
+                              { name: "Web Design", link: "#", iconName: "web", color: "#2563EB" },
+                              { name: "Post Production", link: "#", iconName: "post", color: "#9333EA" },
+                              { name: "Data Analytics", link: "#", iconName: "analytics", color: "#701A75" },
+                              { name: "CAD & Architecture", link: "#", iconName: "cad", color: "#854D0E" },
+                              { name: "3D Animation", link: "#", iconName: "animation", color: "#0D9488" },
+                              { name: "Web Development", link: "#", iconName: "code", color: "#1E3A8A" },
+                              { name: "CAD Textile Design", link: "#", iconName: "textile", color: "#D97706" },
+                              { name: "Software Development", link: "#", iconName: "software", color: "#16A34A" },
+                              { name: "Digital Marketing", link: "#", iconName: "marketing", color: "#0891B2" },
+                              { name: "Machine Learning & AI", link: "#", iconName: "ai", color: "#C026D3" },
+                              { name: "Video Editing", link: "#", iconName: "video", color: "#DC2626" }
+                         ]
                     }
                });
                await courses.save();
           }
+
+          const defaultCaseStudies = {
+               title: "UX Case Studies by Our Students",
+               description: "Click and explore our students UX projects done in the institute in their courses.",
+               buttonText: "View All Works",
+               items: [
+                    { image: "/images/hero-bg.webp", alt: "Rezeeride Web Ads Creative", link: "#" },
+                    { image: "/images/hero-bg.webp", alt: "Photoshop Creative Poster Design", link: "#" },
+                    { image: "/images/hero-bg.webp", alt: "Responsive Frontend Layout Project", link: "#" }
+               ]
+          };
+
+          const defaultCareerDomains = {
+               title: "Explore More Career Domains",
+               description: "Discover ADMEC's diverse courses to continuously enhance your skills through diploma programs in various fields.",
+               items: [
+                    { name: "Graphic Design", link: "#", iconName: "graphic", color: "#10B981" },
+                    { name: "Web Design", link: "#", iconName: "web", color: "#2563EB" },
+                    { name: "Post Production", link: "#", iconName: "post", color: "#9333EA" },
+                    { name: "Data Analytics", link: "#", iconName: "analytics", color: "#701A75" },
+                    { name: "CAD & Architecture", link: "#", iconName: "cad", color: "#854D0E" },
+                    { name: "3D Animation", link: "#", iconName: "animation", color: "#0D9488" },
+                    { name: "Web Development", link: "#", iconName: "code", color: "#1E3A8A" },
+                    { name: "CAD Textile Design", link: "#", iconName: "textile", color: "#D97706" },
+                    { name: "Software Development", link: "#", iconName: "software", color: "#16A34A" },
+                    { name: "Digital Marketing", link: "#", iconName: "marketing", color: "#0891B2" },
+                    { name: "Machine Learning & AI", link: "#", iconName: "ai", color: "#C026D3" },
+                    { name: "Video Editing", link: "#", iconName: "video", color: "#DC2626" }
+               ]
+          };
+
+          if (!courses.caseStudies || !courses.caseStudies.items || courses.caseStudies.items.length === 0) {
+               courses.caseStudies = (courses.course?.[0]?.caseStudies && courses.course[0].caseStudies.items?.length > 0)
+                    ? courses.course[0].caseStudies
+                    : defaultCaseStudies;
+               await courses.save();
+          }
+          if (!courses.careerDomains || !courses.careerDomains.items || courses.careerDomains.items.length === 0) {
+               courses.careerDomains = (courses.course?.[0]?.careerDomains && courses.course[0].careerDomains.items?.length > 0)
+                    ? courses.course[0].careerDomains
+                    : defaultCareerDomains;
+               await courses.save();
+          }
+
           const response = NextResponse.json(courses);
-          // response.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
           return response;
      } catch (err) {
           return NextResponse.json({ error: err.message }, { status: 500 });
@@ -176,6 +219,17 @@ export const updateCourses = async (req) => {
                          }
                     }
                }
+
+               // Handle global case study image uploads if present
+               if (updateData.caseStudies && Array.isArray(updateData.caseStudies.items)) {
+                    for (let j = 0; j < updateData.caseStudies.items.length; j++) {
+                         const caseStudyFile = formData.get(`globalCaseStudy_${j}`) || formData.get(`caseStudy_${j}`);
+                         if (caseStudyFile) {
+                              console.log(`Uploading global case study image ${j}...`);
+                              updateData.caseStudies.items[j].image = await uploadToCloudinary(caseStudyFile, "courses/casestudies");
+                         }
+                    }
+               }
           } else {
                updateData = await req.json();
           }
@@ -201,6 +255,8 @@ export const updateCourses = async (req) => {
           if (updateData.course !== undefined) courses.course = updateData.course;
           if (updateData.card !== undefined) courses.card = updateData.card;
           if (updateData.relatedBlogs !== undefined) courses.relatedBlogs = updateData.relatedBlogs;
+          if (updateData.caseStudies !== undefined) courses.caseStudies = updateData.caseStudies;
+          if (updateData.careerDomains !== undefined) courses.careerDomains = updateData.careerDomains;
 
           await courses.save();
           return NextResponse.json(courses);
@@ -216,18 +272,37 @@ export const getCourseBySlug = async (req, { params }) => {
           const { idOrSlug } = await params;
           const coursesPage = await Courses.findOne();
           
-          if (!coursesPage) {
+          if (!coursesPage || !coursesPage.course || coursesPage.course.length === 0) {
                return NextResponse.json({ error: "No courses configured" }, { status: 404 });
           }
 
           // Search in course array by slug or _id
-          const courseItem = coursesPage.course.find(c => c.slug === idOrSlug || (c._id && c._id.toString() === idOrSlug));
+          let courseItem = coursesPage.course.find(c => c.slug === idOrSlug || (c._id && c._id.toString() === idOrSlug));
 
-          if (!courseItem) {
-               return NextResponse.json({ error: "Course not found" }, { status: 404 });
+          if (!courseItem && idOrSlug) {
+               const cleanSlug = idOrSlug.toLowerCase().replace(/[^a-z0-9]/g, "");
+               courseItem = coursesPage.course.find(c => {
+                    const cSlug = (c.slug || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+                    const cTitle = (c.title || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+                    return (cSlug && (cSlug.includes(cleanSlug) || cleanSlug.includes(cSlug))) ||
+                           (cTitle && (cTitle.includes(cleanSlug) || cleanSlug.includes(cTitle)));
+               });
           }
 
-          return NextResponse.json(courseItem);
+          // Fallback to first course if requested slug is not found
+          if (!courseItem) {
+               courseItem = coursesPage.course[0];
+          }
+
+          const result = courseItem.toObject ? courseItem.toObject() : JSON.parse(JSON.stringify(courseItem));
+          result.caseStudies = (coursesPage.caseStudies && coursesPage.caseStudies.items && coursesPage.caseStudies.items.length > 0)
+               ? coursesPage.caseStudies
+               : result.caseStudies;
+          result.careerDomains = (coursesPage.careerDomains && coursesPage.careerDomains.items && coursesPage.careerDomains.items.length > 0)
+               ? coursesPage.careerDomains
+               : result.careerDomains;
+
+          return NextResponse.json(result);
      } catch (error) {
           return NextResponse.json({ error: error.message }, { status: 500 });
      }

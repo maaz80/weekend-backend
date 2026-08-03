@@ -15,7 +15,7 @@ export const getContact = async (req) => {
                          image: "",
                          inquiries: {
                               title: "Inquiries",
-                              email: "info@weekend.com",
+                              email: "info@weekendux.in",
                               phone: "+91 99999 99999"
                          },
                          location: {

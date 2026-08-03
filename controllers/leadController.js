@@ -53,26 +53,63 @@ export const submitLead = async (req) => {
                                         </p>
 
                                         <div style="margin-bottom: 24px;">
-                                             ${courseItem.chapter && courseItem.chapter.length > 0 ? 
-                                                  courseItem.chapter.map((ch, idx) => `
-                                                       <div style="margin-bottom: 16px; padding: 12px; background-color: #f9fafb; border-left: 4px solid #7c3aed; border-radius: 4px;">
-                                                            <h4 style="font-size: 16px; font-weight: 600; color: #111827; margin: 0 0 8px 0;">
-                                                                 Chapter ${idx + 1}: ${ch.chaptername}
+                                             ${(() => {
+                                                  const defaultChapters = [
+                                                       {
+                                                            chaptername: "Module 1: Foundations of UI/UX & Design Thinking",
+                                                            lessons: [
+                                                                 { lessonname: "Understanding User Experience (UX) vs User Interface (UI)" },
+                                                                 { lessonname: "Design Thinking Methodology & Problem Framing" },
+                                                                 { lessonname: "User Persona Creation & Empathy Mapping" }
+                                                            ]
+                                                       },
+                                                       {
+                                                            chaptername: "Module 2: Information Architecture & Wireframing",
+                                                            lessons: [
+                                                                 { lessonname: "User Flows, Site Maps, and Navigation Architecture" },
+                                                                 { lessonname: "Low-Fidelity & High-Fidelity Wireframing" },
+                                                                 { lessonname: "Interactive Prototyping & Gesture Interactions" }
+                                                            ]
+                                                       },
+                                                       {
+                                                            chaptername: "Module 3: Visual Design & Design Systems",
+                                                            lessons: [
+                                                                 { lessonname: "Typography, Color Theory, and Grid Systems" },
+                                                                 { lessonname: "Creating Reusable Components & Auto Layout" },
+                                                                 { lessonname: "Building Scalable Design Systems & Tokens" }
+                                                            ]
+                                                       },
+                                                       {
+                                                            chaptername: "Module 4: Usability Testing & Portfolio Case Study",
+                                                            lessons: [
+                                                                 { lessonname: "Usability Testing & User Feedback Iteration" },
+                                                                 { lessonname: "Preparing Industry-Ready Case Studies for Handoff" }
+                                                            ]
+                                                       }
+                                                  ];
+
+                                                  const chaptersToRender = (courseItem.chapter && Array.isArray(courseItem.chapter) && courseItem.chapter.length > 0)
+                                                       ? courseItem.chapter
+                                                       : defaultChapters;
+
+                                                  return chaptersToRender.map((ch, idx) => `
+                                                       <div style="margin-bottom: 16px; padding: 14px 16px; background-color: #f9fafb; border-left: 4px solid #FFD400; border-radius: 8px; border-top: 1px solid #f3f4f6; border-right: 1px solid #f3f4f6; border-bottom: 1px solid #f3f4f6;">
+                                                            <h4 style="font-size: 15px; font-weight: 700; color: #111827; margin: 0 0 8px 0;">
+                                                                 ${ch.chaptername || `Chapter ${idx + 1}`}
                                                             </h4>
-                                                            <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #4b5563; line-height: 1.6;">
+                                                            <ul style="margin: 0; padding-left: 20px; font-size: 13.5px; color: #374151; line-height: 1.6;">
                                                                  ${ch.lessons && ch.lessons.length > 0 ? 
-                                                                      ch.lessons.map(les => `<li>${les.lessonname}</li>`).join('') 
-                                                                      : '<li>Lessons coming soon!</li>'
+                                                                      ch.lessons.map(les => `<li>${typeof les === 'string' ? les : (les.lessonname || 'Core Lesson Topic')}</li>`).join('') 
+                                                                      : '<li>Core Lesson Topic & Hands-on Practical</li>'
                                                                  }
                                                             </ul>
                                                        </div>
-                                                  `).join('') 
-                                                  : '<p style="color: #6b7280; font-style: italic;">Syllabus outline is currently being updated. Please check back soon!</p>'
-                                             }
+                                                  `).join('');
+                                             })()}
                                         </div>
 
                                         <p style="font-size: 14px; line-height: 1.5; color: #6b7280; border-top: 1px solid #f3f4f6; padding-top: 16px; margin: 0;">
-                                             If you have any questions or want to discuss batch details, feel free to reply to this email or contact us at <a href="mailto:info@weekendux.com" style="color: #7c3aed; text-decoration: none;">info@weekendux.com</a>.
+                                             If you have any questions or want to discuss batch details, feel free to reply to this email or contact us at <a href="mailto:info@weekendux.in" style="color: #7c3aed; text-decoration: none;">info@weekendux.in</a>.
                                         </p>
                                    </div>
                               `;
@@ -87,7 +124,7 @@ export const submitLead = async (req) => {
           if (courseItem && syllabusHtml) {
                try {
                     await transporter.sendMail({
-                         from: process.env.EMAIL_FROM || '"Weekend UX" <info@weekendux.com>',
+                         from: process.env.EMAIL_FROM || '"Weekend UX" <info@weekendux.in>',
                          to: email,
                          subject: `Requested Syllabus - ${courseName} | Weekend UX`,
                          html: syllabusHtml
@@ -101,7 +138,7 @@ export const submitLead = async (req) => {
           // Send Lead Notification Email to us (our email)
           try {
                await transporter.sendMail({
-                    from: process.env.EMAIL_FROM || '"Weekend UX" <info@weekendux.com>',
+                    from: process.env.EMAIL_FROM || '"Weekend UX" <info@weekendux.in>',
                     to: process.env.EMAIL_TO || 'admin@weekendux.com',
                     subject: `New Lead Captured: ${name} | Weekend UX`,
                     html: `

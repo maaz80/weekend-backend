@@ -33,11 +33,11 @@ export const getFooterGlobalSettings = async (req) => {
                          { itemname: "Contact us", itempath: "/contact-us" }
                     ],
                     socials: [
-                         { icon: "FaFacebookF", path: "#" },
-                         { icon: "RiTwitterXLine", path: "#" },
-                         { icon: "FaInstagram", path: "#" },
-                         { icon: "FaLinkedinIn", path: "#" },
-                         { icon: "CiYoutube", path: "#" }
+                         { icon: "SiFacebook", path: "https://www.facebook.com/weekendux/" },
+                         { icon: "FaInstagram", path: "https://www.instagram.com/weekendux1/" },
+                         { icon: "FaLinkedinIn", path: "https://www.linkedin.com/in/weekend-ux-7b03212a8/" },
+                         { icon: "SiYoutube", path: "https://www.youtube.com/" },
+                         { icon: "FaXTwitter", path: "https://x.com/" }
                     ],
                     card: {
                          title: "Let's build something great together",

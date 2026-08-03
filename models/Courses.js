@@ -84,8 +84,27 @@ const coursesSchema = new mongoose.Schema({
           midheading: String,
           endheading: String,
           description: String
+     },
+     caseStudies: {
+          title: String,
+          description: String,
+          buttonText: String,
+          items: [{
+               image: String,
+               alt: String,
+               link: String
+          }]
+     },
+     careerDomains: {
+          title: String,
+          description: String,
+          items: [{
+               name: String,
+               link: String,
+               iconName: String,
+               color: String
+          }]
      }
-
 }, { timestamps: true });
 
 const Courses = mongoose.models.Courses || mongoose.model("Courses", coursesSchema);
