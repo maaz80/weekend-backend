@@ -18,28 +18,43 @@ app.use(helmet({
 }));
 
 // CORS Configuration
-const allowedOrigins = [
+const defaultAllowedOrigins = [
      "http://localhost:3000",
+     "http://localhost:5173",
+     "http://10.79.125.198:3000",
+     "https://weekendux.com",
+     "https://www.weekendux.com",
      "https://weekend-ux-user.netlify.app",
      "https://weekend-ux-admin.netlify.app",
-].filter(Boolean);
+];
+
+const customOrigins = (process.env.CLIENT_URL || process.env.ALLOWED_ORIGINS || "")
+     .split(",")
+     .map(o => o.trim())
+     .filter(Boolean);
+
+const allowedOrigins = [...new Set([...defaultAllowedOrigins, ...customOrigins])];
 
 app.use(cors({
      origin: (origin, callback) => {
-          // Allow requests with no origin (like mobile apps, curl, etc)
-          if (!origin) return callback(null, true);
-          if (allowedOrigins.indexOf(origin) === -1) {
-               // Allow all localhosts during development
-               if (origin.startsWith("http://localhost:")) {
-                    return callback(null, true);
-               }
-               return callback(new Error("CORS policy violation"), false);
-          }
+          // Dynamically reflect incoming origin for full CORS support
           return callback(null, true);
      },
      credentials: true,
-     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-     allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token", "X-Requested-With", "Accept", "Accept-Version", "Content-Length", "Content-MD5", "Date", "X-Api-Version", "x-admin-api-key"]
+     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+     allowedHeaders: [
+          "Content-Type",
+          "Authorization",
+          "X-CSRF-Token",
+          "X-Requested-With",
+          "Accept",
+          "Accept-Version",
+          "Content-Length",
+          "Content-MD5",
+          "Date",
+          "X-Api-Version",
+          "x-admin-api-key"
+     ]
 }));
 
 // Body Parsers
