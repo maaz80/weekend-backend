@@ -11,7 +11,13 @@ export const protectUser = async (req, res, next) => {
           }
 
           const token = authHeader.split(" ")[1];
-          const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key");
+          const secret = process.env.JWT_SECRET;
+          if (!secret) {
+               console.error("CRITICAL: JWT_SECRET environment variable is missing.");
+               return res.status(500).json({ error: "Server authentication misconfigured" });
+          }
+
+          const decoded = jwt.verify(token, secret);
 
           req.user = await User.findById(decoded.id);
           if (!req.user) {

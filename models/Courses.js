@@ -48,7 +48,9 @@ const coursesSchema = new mongoose.Schema({
                     title: String,
                     description: String,
                     duration: String,
-                    iconText: String
+                    iconText: String,
+                    image: String,
+                    alt: String
                }]
           },
           caseStudies: {

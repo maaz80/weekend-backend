@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 function getEnvVar(name, defaultValue = "") {
      if (process.env[name]) return process.env[name].trim();
      for (const key of Object.keys(process.env)) {

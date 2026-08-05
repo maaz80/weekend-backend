@@ -1,31 +1,44 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
+import rateLimit from "express-rate-limit";
 import connectDB from "./config/db.js";
 import apiRouter from "./routes/api.js";
-
-// Load Environment Variables
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Security Middlewares
+// Hide technology stack details
+app.disable("x-powered-by");
+
+// Enhanced Security Headers via Helmet
 app.use(helmet({
-     contentSecurityPolicy: false, // Turn off if it blocks resources in dev
+     contentSecurityPolicy: false, // Set to false to avoid blocking legitimate cross-domain API assets
+     crossOriginResourcePolicy: { policy: "cross-origin" },
+     hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+     referrerPolicy: { policy: "no-referrer-when-downgrade" },
+     xContentTypeOptions: true,
+     xFrameOptions: { action: "deny" }
 }));
 
-// CORS Configuration
+// Global Rate Limiter: Prevent DoS & Abuse across all endpoints
+const globalLimiter = rateLimit({
+     windowMs: 15 * 60 * 1000, // 15 minutes
+     max: 300, // Limit each IP to 300 requests per windowMs
+     standardHeaders: true,
+     legacyHeaders: false,
+     message: { error: "Too many requests from this IP, please try again after 15 minutes." }
+});
+app.use(globalLimiter);
+
+// CORS Configuration - Strict Origin Validation
 const defaultAllowedOrigins = [
-     // "http://localhost:3000",
-     // "http://localhost:5173",
-     // "http://10.79.125.198:3000",
      "https://weekendux.in",
      "https://www.weekendux.in",
-     // "https://weekend-ux-user.netlify.app",
-     // "https://weekend-ux-admin.netlify.app",
+     // "http://localhost:3000",
+     // "http://localhost:5173"
 ];
 
 const customOrigins = (process.env.CLIENT_URL || process.env.ALLOWED_ORIGINS || "")
@@ -37,8 +50,11 @@ const allowedOrigins = [...new Set([...defaultAllowedOrigins, ...customOrigins])
 
 app.use(cors({
      origin: (origin, callback) => {
-          // Dynamically reflect incoming origin for full CORS support
-          return callback(null, true);
+          // Allow requests with no origin (like mobile apps, curl, server-to-server)
+          if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== "production") {
+               return callback(null, true);
+          }
+          return callback(new Error("CORS policy violation: Request origin not allowed"));
      },
      credentials: true,
      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
@@ -71,7 +87,6 @@ connectDB()
           console.error("Failed to connect to database on startup:", err);
      });
 
-     
 // Base Route
 app.use("/api", apiRouter);
 
@@ -84,11 +99,14 @@ app.use((req, res, next) => {
      res.status(404).json({ error: "Endpoint not found" });
 });
 
-// Error handling middleware
+// Error handling middleware (Hide stack traces in production)
 app.use((err, req, res, next) => {
      console.error("Express Error Handler:", err);
-     res.status(err.status || 500).json({
-          error: err.message || "Internal Server Error"
+     const status = err.status || (err.message && err.message.includes("CORS") ? 403 : 500);
+     res.status(status).json({
+          error: process.env.NODE_ENV === "production" && status === 500
+               ? "Internal Server Error"
+               : (err.message || "Internal Server Error")
      });
 });
 
@@ -97,3 +115,4 @@ app.listen(PORT, () => {
      console.log(`Server is running on port ${PORT}`);
      console.log(`API Base URL: http://localhost:${PORT}/api`);
 });
+

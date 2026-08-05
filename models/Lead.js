@@ -8,6 +8,18 @@ const leadSchema = new mongoose.Schema({
      email: {
           type: String,
           required: true
+     },
+     phone: {
+          type: String,
+          default: ""
+     },
+     source: {
+          type: String,
+          default: "Website Lead"
+     },
+     answers: {
+          type: mongoose.Schema.Types.Mixed,
+          default: {}
      }
 }, { timestamps: true });
 

@@ -218,6 +218,18 @@ export const updateCourses = async (req) => {
                                    }
                               }
                          }
+
+                         // Short-term course card images
+                         if (updateData.course[i].shortTerm && Array.isArray(updateData.course[i].shortTerm.items)) {
+                              for (let j = 0; j < updateData.course[i].shortTerm.items.length; j++) {
+                                   const shortTermFile = formData.get(`course_${i}_shortTerm_${j}`);
+                                   if (shortTermFile) {
+                                        console.log(`Uploading short term card image for course ${i}, item ${j}...`);
+                                        updateData.course[i].shortTerm.items[j].image = await uploadToCloudinary(shortTermFile, "courses/shortterm");
+                                        console.log(`Short term card image uploaded successfully: ${updateData.course[i].shortTerm.items[j].image}`);
+                                   }
+                              }
+                         }
                     }
                }
 

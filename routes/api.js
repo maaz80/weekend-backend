@@ -1,9 +1,19 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import upload from "../middleware/multer.js";
 import { requireAdminForWrites } from "../middleware/adminAuth.js";
 import { sanitizeRequest } from "../middleware/security.js";
 import { otpRateLimit } from "../middleware/otpRateLimit.js";
 import { protectUser } from "../middleware/userAuth.js";
+
+// Strict Rate Limiter for Authentication / Login Endpoints (Prevent Brute-Force & Credential Stuffing)
+const authLimiter = rateLimit({
+     windowMs: 15 * 60 * 1000, // 15 minutes
+     max: 10, // Limit each IP to 10 attempts per window
+     standardHeaders: true,
+     legacyHeaders: false,
+     message: { error: "Too many login/auth attempts from this IP, please try again after 15 minutes." }
+});
 
 // Controllers
 import * as aboutController from "../controllers/aboutController.js";
@@ -120,10 +130,10 @@ const router = Router();
 // Apply sanitization to all API requests
 router.use(sanitizeRequest);
 
-// Test endpoint to trigger GitHub Actions build directly and inspect response
-router.get("/trigger-build-test", async (req, res) => {
+// Test endpoint to trigger GitHub Actions build directly (Admin only)
+router.get("/trigger-build-test", requireAdminForWrites, async (req, res) => {
      try {
-          const { triggerFrontendBuild } = await import("../services/deployService.js");
+          const { triggerFrontendBuild } = await import("../services/buildService.js");
           const result = await triggerFrontendBuild();
           res.json({ success: true, result, message: "Trigger function executed" });
      } catch (err) {
@@ -136,16 +146,16 @@ router.get("/about", makeExpressRoute(aboutController.getAbout));
 router.put("/about", requireAdminForWrites, upload.any(), makeExpressRoute(aboutController.updateAbout));
 
 // 2. Admin
-router.post("/admin/login", makeExpressRoute(adminController.loginAdmin));
+router.post("/admin/login", authLimiter, makeExpressRoute(adminController.loginAdmin));
 
 // 3. Auth
-router.post("/auth/forgot-password", makeExpressRoute(authController.forgotPassword));
-router.post("/auth/login", makeExpressRoute(authController.login));
+router.post("/auth/forgot-password", authLimiter, makeExpressRoute(authController.forgotPassword));
+router.post("/auth/login", authLimiter, makeExpressRoute(authController.login));
 router.post("/auth/logout", makeExpressRoute(authController.logout));
 router.get("/auth/me", makeExpressRoute(authController.getMe));
-router.post("/auth/reset-password", makeExpressRoute(authController.resetPassword));
-router.post("/auth/send-otp", makeExpressRoute(authController.sendAuthOTP));
-router.post("/auth/signup", makeExpressRoute(authController.signup));
+router.post("/auth/reset-password", authLimiter, makeExpressRoute(authController.resetPassword));
+router.post("/auth/send-otp", authLimiter, makeExpressRoute(authController.sendAuthOTP));
+router.post("/auth/signup", authLimiter, makeExpressRoute(authController.signup));
 
 // 4. Blogs
 router.get("/blogs", makeExpressRoute(blogController.getBlogs));
@@ -239,6 +249,7 @@ router.delete("/testimonials/:id", requireAdminForWrites, makeExpressRoute(testi
 
 // 18. Leads
 router.post("/leads", makeExpressRoute(leadController.submitLead));
+router.post("/lead", makeExpressRoute(leadController.submitLead));
 router.get("/leads", requireAdminForWrites, makeExpressRoute(leadController.getLeads));
 
 // 16. Cloudinary Signature
