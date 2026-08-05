@@ -3,6 +3,7 @@ import OTP from "../models/otpModel.js";
 import { transporter } from "../config/mailer.js";
 
 export const generateAndSendOTP = async (phone, email) => {
+     
      try {
           if (!email) {
                throw new Error("Email is required to send OTP");
