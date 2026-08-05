@@ -105,7 +105,7 @@ export const updateAbout = async (req) => {
           if (updateData.relatedBlogs !== undefined) about.relatedBlogs = updateData.relatedBlogs;
 
           await about.save();
-          triggerFrontendBuild();
+          await triggerFrontendBuild();
           return NextResponse.json(about);
      } catch (err) {
           return NextResponse.json({ error: err.message }, { status: 500 });

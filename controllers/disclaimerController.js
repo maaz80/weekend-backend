@@ -41,7 +41,7 @@ export const updateDisclaimer = async (req) => {
                { title, content, relatedBlogs },
                { new: true, upsert: true }
           );
-          triggerFrontendBuild();
+          await triggerFrontendBuild();
           return NextResponse.json(updated);
      } catch (err) {
           return NextResponse.json({ error: err.message }, { status: 500 });

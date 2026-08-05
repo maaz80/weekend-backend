@@ -28,7 +28,7 @@ export const createTestimonial = async (req) => {
           });
 
           await testimonial.save();
-          triggerFrontendBuild();
+          await triggerFrontendBuild();
           return NextResponse.json(testimonial);
      } catch (error) {
           return NextResponse.json({ error: error.message }, { status: 500 });
@@ -52,7 +52,7 @@ export const updateTestimonial = async (req, { params }) => {
                { new: true }
           );
 
-          triggerFrontendBuild();
+          await triggerFrontendBuild();
           return NextResponse.json(testimonial);
      } catch (error) {
           return NextResponse.json({ error: error.message }, { status: 500 });
@@ -64,7 +64,7 @@ export const deleteTestimonial = async (req, { params }) => {
           await connectDB();
           const { id } = await params;
           await Testimonial.findByIdAndDelete(id);
-          triggerFrontendBuild();
+          await triggerFrontendBuild();
           return NextResponse.json({ message: "Deleted" });
      } catch (error) {
           return NextResponse.json({ error: error.message }, { status: 500 });

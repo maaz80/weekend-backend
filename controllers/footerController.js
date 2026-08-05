@@ -76,7 +76,7 @@ export const updateFooterGlobalSettings = async (req) => {
                },
                { new: true, upsert: true }
           );
-          triggerFrontendBuild();
+          await triggerFrontendBuild();
           return NextResponse.json(updated);
      } catch (err) {
           return NextResponse.json({ error: err.message }, { status: 500 });
@@ -99,7 +99,7 @@ export const createFooterColumn = async (req) => {
           });
 
           await column.save();
-          triggerFrontendBuild();
+          await triggerFrontendBuild();
           return NextResponse.json(column, { status: 201 });
      } catch (err) {
           return NextResponse.json({ error: err.message }, { status: 500 });
@@ -123,7 +123,7 @@ export const updateFooterColumn = async (req, { params }) => {
                return NextResponse.json({ error: "Footer column not found" }, { status: 404 });
           }
 
-          triggerFrontendBuild();
+          await triggerFrontendBuild();
           return NextResponse.json(updated);
      } catch (err) {
           return NextResponse.json({ error: err.message }, { status: 500 });
@@ -141,7 +141,7 @@ export const deleteFooterColumn = async (req, { params }) => {
                return NextResponse.json({ error: "Footer column not found" }, { status: 404 });
           }
 
-          triggerFrontendBuild();
+          await triggerFrontendBuild();
           return NextResponse.json({ success: true, message: "Column deleted successfully" });
      } catch (err) {
           return NextResponse.json({ error: err.message }, { status: 500 });

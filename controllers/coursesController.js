@@ -260,7 +260,7 @@ export const updateCourses = async (req) => {
           if (updateData.careerDomains !== undefined) courses.careerDomains = updateData.careerDomains;
 
           await courses.save();
-          triggerFrontendBuild();
+          await triggerFrontendBuild();
           return NextResponse.json(courses);
      } catch (err) {
           return NextResponse.json({ error: err.message }, { status: 500 });

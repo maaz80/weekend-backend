@@ -92,7 +92,7 @@ export const updateNavbar = async (req) => {
           }
 
           await navbar.save();
-          triggerFrontendBuild();
+          await triggerFrontendBuild();
           return NextResponse.json(navbar);
      } catch (err) {
           return NextResponse.json({ error: err.message }, { status: 500 });

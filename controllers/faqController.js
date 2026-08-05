@@ -59,7 +59,7 @@ export const updateFaq = async (req, { params }) => {
                });
           }
 
-          triggerFrontendBuild();
+          await triggerFrontendBuild();
           return NextResponse.json(data);
      } catch (err) {
           return NextResponse.json({ error: err.message }, { status: 500 });

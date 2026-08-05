@@ -66,7 +66,7 @@ export const createLocation = async (req) => {
           const title = parsedData.title || "Untitled Location Group";
           const location = new Location({ title, items: [] });
           await location.save();
-          triggerFrontendBuild();
+          await triggerFrontendBuild();
 
           return NextResponse.json(location, { status: 201 });
      } catch (err) {
@@ -202,7 +202,7 @@ export const addItem = async (req, { params }) => {
 
           location.items.push(newItem);
           await location.save();
-          triggerFrontendBuild();
+          await triggerFrontendBuild();
 
           return NextResponse.json(location);
      } catch (err) {
@@ -313,7 +313,7 @@ export const updateItem = async (req, { params }) => {
 
           location.items[itemIndex] = updatedItem;
           await location.save();
-          triggerFrontendBuild();
+          await triggerFrontendBuild();
 
           return NextResponse.json(location);
      } catch (err) {
@@ -341,7 +341,7 @@ export const deleteItem = async (req, { params }) => {
 
           location.items.splice(itemIndex, 1);
           await location.save();
-          triggerFrontendBuild();
+          await triggerFrontendBuild();
 
           return NextResponse.json(location);
      } catch (err) {

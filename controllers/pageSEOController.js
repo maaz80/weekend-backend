@@ -46,7 +46,7 @@ export const updatePageSEO = async (req, { params }) => {
                });
           }
 
-          triggerFrontendBuild();
+          await triggerFrontendBuild();
           return NextResponse.json(seo);
      } catch (err) {
           return NextResponse.json({ error: err.message }, { status: 500 });
