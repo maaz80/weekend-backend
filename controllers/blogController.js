@@ -108,7 +108,7 @@ export const updateBlogPage = async (req) => {
           if (updateData.blogs !== undefined) blogPage.blogs = updateData.blogs;
 
           await blogPage.save();
-          await triggerFrontendBuild();
+          await triggerFrontendBuild("Blog", blogPage?._id);
           return NextResponse.json(blogPage);
      } catch (err) {
           return NextResponse.json({ error: err.message }, { status: 500 });
@@ -223,7 +223,7 @@ export const createBlog = async (req) => {
 
           // Return the newly created blog item (with its assigned _id)
           const createdBlog = blogPage.blogs[blogPage.blogs.length - 1];
-          await triggerFrontendBuild();
+          await triggerFrontendBuild("Blog", createdBlog?._id);
           return NextResponse.json(createdBlog);
      } catch (error) {
           return NextResponse.json({ error: error.message }, { status: 500 });
@@ -325,7 +325,7 @@ export const updateBlog = async (req, { params }) => {
           blogPage.markModified('blogs');
           await blogPage.save();
 
-          await triggerFrontendBuild();
+          await triggerFrontendBuild("Blog", blogPage.blogs[blogIndex]?._id);
           return NextResponse.json(blogPage.blogs[blogIndex]);
      } catch (error) {
           return NextResponse.json({ error: error.message }, { status: 500 });
@@ -350,7 +350,7 @@ export const deleteBlog = async (req, { params }) => {
           blogPage.blogs.splice(blogIndex, 1);
           await blogPage.save();
 
-          await triggerFrontendBuild();
+          await triggerFrontendBuild("Blog", idOrSlug);
           return NextResponse.json({ message: "Blog post deleted successfully" });
      } catch (err) {
           return NextResponse.json({ error: err.message }, { status: 500 });

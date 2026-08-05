@@ -1,4 +1,4 @@
-export async function triggerFrontendBuild(modelName = "Manual", docId = "") {
+export async function triggerFrontendBuild(modelName = "Content", docId = "") {
      const GITHUB_TOKEN = process.env.GITHUB_PERSONAL_ACCESS_TOKEN || process.env.GITHUB_TOKEN;
      const GITHUB_OWNER = process.env.GITHUB_OWNER || 'maaz80';
      const GITHUB_REPO = process.env.GITHUB_REPO || 'weekend-ux';
@@ -41,22 +41,23 @@ export async function triggerFrontendBuild(modelName = "Manual", docId = "") {
 
 // Global Mongoose plugin that listens to all CRUD operations
 export function buildTriggerPlugin(schema) {
-     const ignoredModels = ["OTP", "User", "Auth", "Lead", "Booking"];
+     const ignoredModels = ["OTP", "User", "Auth", "Lead", "Booking", "otp", "user", "auth", "lead", "booking", "otps", "users", "leads", "bookings"];
 
-     const handleTrigger = (doc, modelName) => {
-          if (!modelName || ignoredModels.includes(modelName)) return;
+     const handleTrigger = (doc, rawModelName) => {
+          const modelName = rawModelName || "Content";
+          if (ignoredModels.includes(modelName) || ignoredModels.includes(modelName.toLowerCase())) return;
           triggerFrontendBuild(modelName, doc?._id || doc?.id || "");
      };
 
      // Document post-save hook
      schema.post("save", function (doc) {
-          const modelName = this.constructor?.modelName || doc?.constructor?.modelName;
+          const modelName = this.constructor?.modelName || doc?.constructor?.modelName || this.modelName;
           handleTrigger(doc, modelName);
      });
 
      // Document post-remove hook
      schema.post("remove", function (doc) {
-          const modelName = this.constructor?.modelName || doc?.constructor?.modelName;
+          const modelName = this.constructor?.modelName || doc?.constructor?.modelName || this.modelName;
           handleTrigger(doc, modelName);
      });
 
@@ -74,7 +75,7 @@ export function buildTriggerPlugin(schema) {
 
      queryHooks.forEach((hook) => {
           schema.post(hook, function (res) {
-               const modelName = this.model?.modelName;
+               const modelName = this.model?.modelName || this._modelName || this.mongooseCollection?.name || "QueryContent";
                handleTrigger(res, modelName);
           });
      });

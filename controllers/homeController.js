@@ -123,7 +123,7 @@ export const updateHome = async (req) => {
           if (updateData.relatedBlogs !== undefined) home.relatedBlogs = updateData.relatedBlogs;
 
           await home.save();
-          await triggerFrontendBuild();
+          await triggerFrontendBuild("Home", home?._id);
           return NextResponse.json(home);
      } catch (err) {
           return NextResponse.json({ error: err.message }, { status: 500 });
