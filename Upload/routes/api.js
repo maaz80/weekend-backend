@@ -120,6 +120,17 @@ const router = Router();
 // Apply sanitization to all API requests
 router.use(sanitizeRequest);
 
+// Test endpoint to trigger GitHub Actions build directly and inspect response
+router.get("/trigger-build-test", async (req, res) => {
+     try {
+          const { triggerFrontendBuild } = await import("../services/deployService.js");
+          const result = await triggerFrontendBuild();
+          res.json({ success: true, result, message: "Trigger function executed" });
+     } catch (err) {
+          res.status(500).json({ success: false, error: err.message });
+     }
+});
+
 // 1. About
 router.get("/about", makeExpressRoute(aboutController.getAbout));
 router.put("/about", requireAdminForWrites, upload.any(), makeExpressRoute(aboutController.updateAbout));
