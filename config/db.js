@@ -1,7 +1,11 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import { buildTriggerPlugin } from "../services/deployService.js";
 
 dotenv.config();
+
+// Register global Mongoose plugin for automatic build triggers on content updates
+mongoose.plugin(buildTriggerPlugin);
 
 const MONGO_URI = process.env.MONGO_URI;
 
