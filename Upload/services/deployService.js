@@ -1,17 +1,7 @@
-function getEnvVar(name, defaultValue = "") {
-     if (process.env[name]) return process.env[name].trim();
-     for (const key of Object.keys(process.env)) {
-          if (key.trim() === name) {
-               return (process.env[key] || "").trim();
-          }
-     }
-     return defaultValue;
-}
-
 export async function triggerFrontendBuild(modelName = "Content", docId = "") {
-     const GITHUB_TOKEN = getEnvVar("GITHUB_PERSONAL_ACCESS_TOKEN") || getEnvVar("GITHUB_TOKEN");
-     const GITHUB_OWNER = getEnvVar("GITHUB_OWNER", "maaz80");
-     const GITHUB_REPO = getEnvVar("GITHUB_REPO", "weekend-ux");
+     const GITHUB_TOKEN = process.env.GITHUB_PERSONAL_ACCESS_TOKEN || process.env.GITHUB_TOKEN;
+     const GITHUB_OWNER = process.env.GITHUB_OWNER || 'maaz80';
+     const GITHUB_REPO = process.env.GITHUB_REPO || 'weekend-ux';
 
      if (!GITHUB_TOKEN) {
           const msg = "Skipping build trigger: GITHUB_PERSONAL_ACCESS_TOKEN / GITHUB_TOKEN env variable not set in server environment.";
