@@ -23,10 +23,10 @@ jobs:
         with:
           node-version: 22
 
-      - name: Create restart.txt for Hostinger Passenger reload
+      - name: Create tmp/restart.txt for Passenger reload
         run: |
           mkdir -p tmp
-          touch tmp/restart.txt
+          echo $(date +%s) > tmp/restart.txt
 
       - name: Upload to Hostinger via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
