@@ -71,6 +71,7 @@ connectDB()
           console.error("Failed to connect to database on startup:", err);
      });
 
+     
 // Base Route
 app.use("/api", apiRouter);
 
