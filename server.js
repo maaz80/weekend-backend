@@ -19,13 +19,13 @@ app.use(helmet({
 
 // CORS Configuration
 const defaultAllowedOrigins = [
-     "http://localhost:3000",
-     "http://localhost:5173",
-     "http://10.79.125.198:3000",
-     "https://weekendux.com",
-     "https://www.weekendux.com",
-     "https://weekend-ux-user.netlify.app",
-     "https://weekend-ux-admin.netlify.app",
+     // "http://localhost:3000",
+     // "http://localhost:5173",
+     // "http://10.79.125.198:3000",
+     "https://weekendux.in",
+     "https://www.weekendux.in",
+     // "https://weekend-ux-user.netlify.app",
+     // "https://weekend-ux-admin.netlify.app",
 ];
 
 const customOrigins = (process.env.CLIENT_URL || process.env.ALLOWED_ORIGINS || "")

@@ -22,6 +22,7 @@ import * as navbarController from "../controllers/navbarController.js";
 import * as otpController from "../controllers/otpController.js";
 import * as pageSEOController from "../controllers/pageSEOController.js";
 import * as policyController from "../controllers/policyController.js";
+import * as termsController from "../controllers/termsController.js";
 import * as testimonialController from "../controllers/testimonialController.js";
 import * as leadController from "../controllers/leadController.js";
 
@@ -210,6 +211,10 @@ router.put("/pages/:pageId/seo", requireAdminForWrites, makeExpressRoute(pageSEO
 // 13. Policy
 router.get("/policy", makeExpressRoute(policyController.getPolicy));
 router.put("/policy", requireAdminForWrites, makeExpressRoute(policyController.updatePolicy));
+
+// 13.5. Terms & Conditions
+router.get("/terms", makeExpressRoute(termsController.getTerms));
+router.put("/terms", requireAdminForWrites, makeExpressRoute(termsController.updateTerms));
 
 // 14. OTP
 router.post("/send-otp", otpRateLimit, makeExpressRoute(otpController.sendOTP));
