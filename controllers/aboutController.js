@@ -6,6 +6,8 @@ import { triggerFrontendBuild } from "../services/deployService.js";
 
 // GET ABOUT PAGE CONFIGURATION
 export const getAbout = async (req) => {
+
+     
      try {
           await connectDB();
           let about = await About.findOne().lean();
