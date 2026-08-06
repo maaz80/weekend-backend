@@ -6,9 +6,12 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
+
 concurrency:
   group: deploy-backend
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build-and-deploy:
@@ -29,7 +32,7 @@ jobs:
           echo $(date +%s) > tmp/restart.txt
 
       - name: Upload to Hostinger via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER || 'ftp.api.weekendux.in' }}
           username: ${{ secrets.FTP_USERNAME || 'u947813591.apiweekendux' }}
@@ -37,11 +40,13 @@ jobs:
           port: ${{ secrets.FTP_PORT || 21 }}
           protocol: ${{ secrets.FTP_PROTOCOL || 'ftp' }}
           security: loose
+          timeout: 120000
           local-dir: ./
-          server-dir: /
+          server-dir: ${{ secrets.FTP_SERVER_DIR || '/' }}
           state-name: .ftp-deploy-sync-state.json
           dry-run: false
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
+

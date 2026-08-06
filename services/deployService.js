@@ -1,10 +1,12 @@
 import "dotenv/config";
 
 function getEnvVar(name, defaultValue = "") {
-     if (process.env[name]) return process.env[name].trim();
+     const direct = process.env[name] || process.env[name.toLowerCase()] || process.env[name.toUpperCase()];
+     if (direct && direct.trim() !== "") return direct.trim();
      for (const key of Object.keys(process.env)) {
-          if (key.trim() === name) {
-               return (process.env[key] || "").trim();
+          if (key.trim().toLowerCase() === name.toLowerCase()) {
+               const v = process.env[key];
+               if (v && v.trim() !== "") return v.trim();
           }
      }
      return defaultValue;
@@ -27,7 +29,7 @@ async function executeDispatch(modelName, docId) {
      }
 
      try {
-          console.log(`[BuildTrigger] Triggering GitHub build for model: "${modelName}", ID: "${docId}"`);
+          console.log(`[BuildTrigger] Triggering GitHub build for owner: "${GITHUB_OWNER}", repo: "${GITHUB_REPO}", model: "${modelName}", ID: "${docId}"`);
           const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/dispatches`, {
                method: "POST",
                headers: {
@@ -60,6 +62,12 @@ export function triggerFrontendBuild(modelName = "Content", docId = "") {
      pendingModel = modelName;
      pendingDocId = docId;
 
+     const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY || process.env.NOW_REGION);
+
+     if (isServerless) {
+          return executeDispatch(modelName, docId);
+     }
+
      return new Promise((resolve) => {
           pendingResolves.push(resolve);
 
@@ -74,7 +82,7 @@ export function triggerFrontendBuild(modelName = "Content", docId = "") {
 
                const result = await executeDispatch(pendingModel, pendingDocId);
                resolvesToCall.forEach((res) => res(result));
-          }, 3000); // 3-second debounce window to coalesce rapid database operations
+          }, 3000); // 3-second debounce window on traditional long-running servers
      });
 }
 

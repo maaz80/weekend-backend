@@ -37,8 +37,11 @@ app.use(globalLimiter);
 const defaultAllowedOrigins = [
      "https://weekendux.in",
      "https://www.weekendux.in",
+     "https://admin.weekendux.in",
+     "https://weekend-ux-admin.netlify.app",
      "http://localhost:3000",
-     "http://localhost:5173"
+     "http://localhost:5173",
+     "http://localhost:5174"
 ];
 
 const customOrigins = (process.env.CLIENT_URL || process.env.ALLOWED_ORIGINS || "")
@@ -48,13 +51,27 @@ const customOrigins = (process.env.CLIENT_URL || process.env.ALLOWED_ORIGINS || 
 
 const allowedOrigins = [...new Set([...defaultAllowedOrigins, ...customOrigins])];
 
+const isAllowedDomain = (origin) => {
+     if (!origin) return true;
+     if (allowedOrigins.includes(origin)) return true;
+     try {
+          const host = new URL(origin).hostname;
+          if (host.endsWith("weekendux.in") || host.endsWith("vercel.app") || host.endsWith("onrender.com")) {
+               return true;
+          }
+     } catch {
+          return false;
+     }
+     return false;
+};
+
 app.use(cors({
      origin: (origin, callback) => {
-          // Allow requests with no origin (like mobile apps, curl, server-to-server)
-          if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== "production") {
+          if (!origin || isAllowedDomain(origin) || process.env.NODE_ENV !== "production") {
                return callback(null, true);
           }
-          return callback(new Error("CORS policy violation: Request origin not allowed"));
+          console.warn(`[CORS Violation] Blocked request from origin: "${origin}"`);
+          return callback(new Error(`CORS policy violation: Request origin "${origin}" not allowed`));
      },
      credentials: true,
      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
