@@ -10,14 +10,19 @@ function getEnvVar(name, defaultValue = "") {
      return defaultValue;
 }
 
-export async function triggerFrontendBuild(modelName = "Content", docId = "") {
+let debounceTimer = null;
+let pendingResolves = [];
+let pendingModel = "Content";
+let pendingDocId = "";
+
+async function executeDispatch(modelName, docId) {
      const GITHUB_TOKEN = getEnvVar("GITHUB_PERSONAL_ACCESS_TOKEN") || getEnvVar("GITHUB_TOKEN");
      const GITHUB_OWNER = getEnvVar("GITHUB_OWNER", "maaz80");
      const GITHUB_REPO = getEnvVar("GITHUB_REPO", "weekend-ux");
 
      if (!GITHUB_TOKEN) {
-          const msg = "Skipping build trigger: GITHUB_PERSONAL_ACCESS_TOKEN / GITHUB_TOKEN env variable not set in server environment.";
-          console.warn(msg);
+          const msg = "Skipping build trigger: GITHUB_PERSONAL_ACCESS_TOKEN / GITHUB_TOKEN environment variable is missing on the server.";
+          console.warn(`[BuildTrigger] ${msg}`);
           return { success: false, reason: msg };
      }
 
@@ -49,6 +54,28 @@ export async function triggerFrontendBuild(modelName = "Content", docId = "") {
           console.error("Failed to trigger GitHub Actions build Exception:", error.message);
           return { success: false, error: error.message };
      }
+}
+
+export function triggerFrontendBuild(modelName = "Content", docId = "") {
+     pendingModel = modelName;
+     pendingDocId = docId;
+
+     return new Promise((resolve) => {
+          pendingResolves.push(resolve);
+
+          if (debounceTimer) {
+               clearTimeout(debounceTimer);
+          }
+
+          debounceTimer = setTimeout(async () => {
+               debounceTimer = null;
+               const resolvesToCall = [...pendingResolves];
+               pendingResolves = [];
+
+               const result = await executeDispatch(pendingModel, pendingDocId);
+               resolvesToCall.forEach((res) => res(result));
+          }, 3000); // 3-second debounce window to coalesce rapid database operations
+     });
 }
 
 // Global Mongoose plugin that listens to all CRUD operations
@@ -92,3 +119,4 @@ export function buildTriggerPlugin(schema) {
           });
      });
 }
+

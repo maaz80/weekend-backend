@@ -133,7 +133,7 @@ router.use(sanitizeRequest);
 // Test endpoint to trigger GitHub Actions build directly (Admin only)
 router.get("/trigger-build-test", requireAdminForWrites, async (req, res) => {
      try {
-          const { triggerFrontendBuild } = await import("../services/buildService.js");
+          const { triggerFrontendBuild } = await import("../services/deployService.js");
           const result = await triggerFrontendBuild();
           res.json({ success: true, result, message: "Trigger function executed" });
      } catch (err) {

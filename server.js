@@ -37,8 +37,8 @@ app.use(globalLimiter);
 const defaultAllowedOrigins = [
      "https://weekendux.in",
      "https://www.weekendux.in",
-     // "http://localhost:3000",
-     // "http://localhost:5173"
+     "http://localhost:3000",
+     "http://localhost:5173"
 ];
 
 const customOrigins = (process.env.CLIENT_URL || process.env.ALLOWED_ORIGINS || "")
