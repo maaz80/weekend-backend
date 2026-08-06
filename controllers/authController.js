@@ -125,11 +125,29 @@ export const getMe = async (req) => {
                return NextResponse.json({ error: "Not authorized, token failed" }, { status: 401 });
           }
 
-          const user = await User.findById(decoded.id).populate('enrolledCourses.courseId');
+          const user = await User.findById(decoded.id).lean();
 
           if (!user) {
                return NextResponse.json({ error: "User not found" }, { status: 404 });
           }
+
+          const Courses = (await import("../models/Courses.js")).default;
+          const coursesDoc = await Courses.findOne().lean();
+          const allCourses = coursesDoc?.course || [];
+
+          const populatedEnrolled = (user.enrolledCourses || []).map(item => {
+               const cIdStr = item.courseId?.toString() || "";
+               const cSlugStr = item.courseSlug || "";
+               const found = allCourses.find(c =>
+                    c._id?.toString() === cIdStr ||
+                    c.slug === cIdStr ||
+                    (cSlugStr && c.slug === cSlugStr)
+               );
+               return {
+                    ...item,
+                    courseId: found || { _id: cIdStr, slug: cSlugStr, title: cSlugStr || "Course" }
+               };
+          });
 
           return NextResponse.json({
                success: true,
@@ -137,7 +155,7 @@ export const getMe = async (req) => {
                     id: user._id,
                     name: user.name,
                     email: user.email,
-                    enrolledCourses: user.enrolledCourses,
+                    enrolledCourses: populatedEnrolled,
                },
           });
      } catch (error) {
@@ -237,10 +255,27 @@ export const resetPassword = async (req) => {
 export const sendAuthOTP = async (req) => {
      try {
           await connectDB();
-          const { email } = await req.json();
+          const { email, mode } = await req.json();
 
           if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
                return NextResponse.json({ error: "Valid email address is required" }, { status: 400 });
+          }
+
+          // Check if user exists in database
+          const existingUser = await User.findOne({ email });
+
+          if (mode === "login" && !existingUser) {
+               return NextResponse.json({
+                    error: "Account not found with this email. Please sign up first.",
+                    shouldSignup: true
+               }, { status: 404 });
+          }
+
+          if (mode === "signup" && existingUser) {
+               return NextResponse.json({
+                    error: "Account already exists with this email. Please log in instead.",
+                    shouldLogin: true
+               }, { status: 400 });
           }
 
           // Generate 6-digit OTP

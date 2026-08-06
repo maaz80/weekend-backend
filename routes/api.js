@@ -157,6 +157,9 @@ router.put("/about", requireAdminForWrites, upload.any(), makeExpressRoute(about
 
 // 2. Admin
 router.post("/admin/login", authLimiter, makeExpressRoute(adminController.loginAdmin));
+router.get("/admin/users", requireAdminForWrites, makeExpressRoute(adminController.getUsers));
+router.post("/admin/users/assign-course", requireAdminForWrites, makeExpressRoute(adminController.assignCourseToUser));
+router.post("/admin/users/revoke-course", requireAdminForWrites, makeExpressRoute(adminController.revokeCourseFromUser));
 
 // 3. Auth
 router.post("/auth/forgot-password", authLimiter, makeExpressRoute(authController.forgotPassword));
