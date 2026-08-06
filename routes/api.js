@@ -141,6 +141,16 @@ router.get("/trigger-build-test", requireAdminForWrites, async (req, res) => {
      }
 });
 
+// Test endpoint to verify live backend deployment
+router.get("/deploy-check", (req, res) => {
+     res.json({
+          success: true,
+          status: "SUCCESS",
+          message: "🎉 Live Backend Auto-Deploy Test is WORKING!",
+          timestamp: new Date().toISOString()
+     });
+});
+
 // 1. About
 router.get("/about", makeExpressRoute(aboutController.getAbout));
 router.put("/about", requireAdminForWrites, upload.any(), makeExpressRoute(aboutController.updateAbout));
