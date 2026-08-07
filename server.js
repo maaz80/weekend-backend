@@ -10,6 +10,9 @@ import apiRouter from "./routes/api.js";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Enable Trust Proxy for Reverse Proxies (Hostinger, NGINX, Cloudflare, etc.)
+app.set("trust proxy", 1);
+
 // Hide technology stack details
 app.disable("x-powered-by");
 
@@ -29,6 +32,7 @@ const globalLimiter = rateLimit({
      max: 300, // Limit each IP to 300 requests per windowMs
      standardHeaders: true,
      legacyHeaders: false,
+     validate: { xForwardedForHeader: false },
      message: { error: "Too many requests from this IP, please try again after 15 minutes." }
 });
 app.use(globalLimiter);
@@ -91,9 +95,9 @@ app.use(cors({
      ]
 }));
 
-// Body Parsers
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+// Body Parsers (Support large gallery video & image uploads)
+app.use(express.json({ limit: "500mb" }));
+app.use(express.urlencoded({ extended: true, limit: "500mb" }));
 app.use(cookieParser());
 
 // Database Connection

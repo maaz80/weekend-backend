@@ -12,6 +12,7 @@ const authLimiter = rateLimit({
      max: 10, // Limit each IP to 10 attempts per window
      standardHeaders: true,
      legacyHeaders: false,
+     validate: { xForwardedForHeader: false },
      message: { error: "Too many login/auth attempts from this IP, please try again after 15 minutes." }
 });
 

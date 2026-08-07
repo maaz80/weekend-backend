@@ -1,36 +1,26 @@
 import multer from "multer";
 
-const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
-
-const allowedMimeTypes = new Set([
-     "image/jpeg",
-     "image/png",
-     "image/webp",
-     "video/mp4",
-     "video/quicktime",
-     "video/webm"
-]);
-
-const allowedExtensions = new Set([
-     "jpg",
-     "jpeg",
-     "png",
-     "webp",
-     "mp4",
-     "mov",
-     "webm"
-]);
+const MAX_FILE_SIZE_BYTES = 500 * 1024 * 1024; // 500 MB limit for gallery videos and images
 
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-     const extension = file.originalname.split(".").pop()?.toLowerCase();
+     if (!file) return cb(null, true);
+     const mime = (file.mimetype || "").toLowerCase();
+     const originalName = file.originalname || "";
+     const extension = originalName.split(".").pop()?.toLowerCase() || "";
 
-     if (allowedMimeTypes.has(file.mimetype) && allowedExtensions.has(extension)) {
+     const isAllowedMime = mime.startsWith("image/") || mime.startsWith("video/") || mime === "application/octet-stream";
+     const isAllowedExt = [
+          "jpg", "jpeg", "png", "webp", "gif", "svg", "heic", "heif", "avif",
+          "mp4", "mov", "webm", "m4v", "avi", "3gp", "3gpp", "mkv", "ts"
+     ].includes(extension);
+
+     if (isAllowedMime || isAllowedExt) {
           return cb(null, true);
      }
 
-     cb(new Error("Invalid file type. Only JPG, PNG, WEBP, MP4, MOV, and WEBM files are allowed."));
+     cb(new Error(`Invalid file type .${extension} (${mime}). Please upload a valid image or video.`));
 };
 
 const upload = multer({
@@ -38,7 +28,7 @@ const upload = multer({
      fileFilter,
      limits: {
           fileSize: MAX_FILE_SIZE_BYTES,
-          files: 8
+          files: 50
      }
 });
 
