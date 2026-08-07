@@ -24,6 +24,12 @@ const coursesSchema = new mongoose.Schema({
           brochureSubtext: String,
           brochurePhones: String,
           brochureLink: String,
+          videos: [{
+               video: String,
+               alt: String,
+               title: String,
+               thumbnail: String
+          }],
           chapter:[ {
                chaptername: String,
                lessons: [{

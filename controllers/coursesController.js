@@ -230,6 +230,22 @@ export const updateCourses = async (req) => {
                                    }
                               }
                          }
+
+                         // Course videos & thumbnails
+                         if (updateData.course[i].videos && Array.isArray(updateData.course[i].videos)) {
+                              for (let j = 0; j < updateData.course[i].videos.length; j++) {
+                                   const videoFile = formData.get(`course_${i}_video_${j}`);
+                                   if (videoFile && typeof videoFile === "object" && typeof videoFile.arrayBuffer === "function") {
+                                        console.log(`Uploading video file for course ${i}, item ${j}...`);
+                                        updateData.course[i].videos[j].video = await uploadToCloudinary(videoFile, "courses/videos");
+                                   }
+                                   const videoThumbFile = formData.get(`course_${i}_videoThumb_${j}`);
+                                   if (videoThumbFile && typeof videoThumbFile === "object" && typeof videoThumbFile.arrayBuffer === "function") {
+                                        console.log(`Uploading video thumbnail for course ${i}, item ${j}...`);
+                                        updateData.course[i].videos[j].thumbnail = await uploadToCloudinary(videoThumbFile, "courses/videothumbnails");
+                                   }
+                              }
+                         }
                     }
                }
 
