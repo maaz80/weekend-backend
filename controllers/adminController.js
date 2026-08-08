@@ -53,14 +53,26 @@ export const getUsers = async (req) => {
                const enrolled = (user.enrolledCourses || []).map(item => {
                     const cIdStr = item.courseId?.toString() || "";
                     const cSlugStr = item.courseSlug || "";
-                    const found = allCourses.find(c =>
-                         c._id?.toString() === cIdStr ||
-                         c.slug === cIdStr ||
+                    let found = allCourses.find(c =>
+                         (c._id && c._id.toString() === cIdStr) ||
+                         (c.slug && c.slug === cIdStr) ||
                          (cSlugStr && c.slug === cSlugStr)
                     );
+
+                    if (!found && allCourses.length === 1) {
+                         found = allCourses[0];
+                    }
+
+                    let derivedTitle = "Course";
+                    if (found) {
+                         derivedTitle = found.title || found.name || "Course";
+                    } else if (cSlugStr) {
+                         derivedTitle = cSlugStr.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+                    }
+
                     return {
                          ...item,
-                         courseId: found || { _id: cIdStr, slug: cSlugStr, title: cSlugStr || "Course" }
+                         courseId: found || { _id: cIdStr, slug: cSlugStr, title: derivedTitle }
                     };
                });
                return {
@@ -98,7 +110,7 @@ export const assignCourseToUser = async (req) => {
           const targetCourse = allCourses.find(c => c._id?.toString() === courseId.toString() || c.slug === courseId.toString());
 
           const targetIdStr = targetCourse?._id?.toString() || courseId.toString();
-          const targetSlugStr = targetCourse?.slug || "";
+          const targetSlugStr = targetCourse?.slug || (targetCourse?.title ? targetCourse.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-") : courseId.toString());
 
           const alreadyEnrolled = user.enrolledCourses.some((item) => {
                const itemCId = item.courseId?.toString();

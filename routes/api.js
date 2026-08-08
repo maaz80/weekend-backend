@@ -161,6 +161,19 @@ router.post("/admin/login", authLimiter, makeExpressRoute(adminController.loginA
 router.get("/admin/users", requireAdminForWrites, makeExpressRoute(adminController.getUsers));
 router.post("/admin/users/assign-course", requireAdminForWrites, makeExpressRoute(adminController.assignCourseToUser));
 router.post("/admin/users/revoke-course", requireAdminForWrites, makeExpressRoute(adminController.revokeCourseFromUser));
+router.post("/admin/upload-video", requireAdminForWrites, upload.single("video"), async (req, res) => {
+     try {
+          if (!req.file) {
+               return res.status(400).json({ error: "No video file provided" });
+          }
+          const { uploadToCloudinary } = await import("../config/cloudinary.js");
+          const url = await uploadToCloudinary(req.file, "courses/videos");
+          res.json({ success: true, url });
+     } catch (err) {
+          console.error("Video upload error:", err);
+          res.status(500).json({ error: err.message || "Video upload failed" });
+     }
+});
 
 // 3. Auth
 router.post("/auth/forgot-password", authLimiter, makeExpressRoute(authController.forgotPassword));

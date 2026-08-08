@@ -42,7 +42,8 @@ export const uploadToCloudinary = async (file, folder = "weekend_ux_media") => {
 
           const uniqueId = `${seoFriendlyName || "media"}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 
-          const isVideo = folder.includes("video") || mimeType.startsWith("video/");
+          const isThumbnail = folder.toLowerCase().includes("thumbnail");
+          const isVideo = !isThumbnail && (folder.endsWith("/videos") || folder.endsWith("/video") || mimeType.startsWith("video/"));
           const resourceType = isVideo ? "video" : "auto";
 
           return new Promise((resolve, reject) => {
