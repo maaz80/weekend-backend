@@ -10,6 +10,15 @@ const blogSchema = new mongoose.Schema({
           endtitle: String
 
      },
+     authorTemplates: [{
+          id: String,
+          label: String,
+          name: String,
+          designation: String,
+          bio: String,
+          twitter: String,
+          linkedin: String
+     }],
      blogs: [{
           image: String,
           alt: String,

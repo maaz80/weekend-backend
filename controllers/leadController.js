@@ -116,7 +116,7 @@ export const submitLead = async (req) => {
           }
 
           // Send Lead Notification Email to Admin
-          const adminRecipient = process.env.EMAIL_TO || process.env.EMAIL_USER || process.env.SMTP_USER || 'admin@weekendux.com';
+          const adminRecipient = process.env.EMAIL_TO || process.env.EMAIL_USER || process.env.SMTP_USER || 'support@weekendux.in';
           const isChatbotLead = leadSource === "Chatbot Inquiry" || (answers && Object.keys(answers).length > 0);
 
           try {

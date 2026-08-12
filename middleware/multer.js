@@ -28,7 +28,9 @@ const upload = multer({
      fileFilter,
      limits: {
           fileSize: MAX_FILE_SIZE_BYTES,
-          files: 50
+          files: 50,
+          fields: 50,
+          fieldNestingDepth: 5
      }
 });
 

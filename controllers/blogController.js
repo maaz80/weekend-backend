@@ -105,6 +105,7 @@ export const updateBlogPage = async (req) => {
 
           if (updateData.hero !== undefined) blogPage.hero = updateData.hero;
           if (updateData.featuredblogs !== undefined) blogPage.featuredblogs = updateData.featuredblogs;
+          if (updateData.authorTemplates !== undefined) blogPage.authorTemplates = updateData.authorTemplates;
           if (updateData.blogs !== undefined) blogPage.blogs = updateData.blogs;
 
           await blogPage.save();
