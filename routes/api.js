@@ -37,6 +37,7 @@ import * as policyController from "../controllers/policyController.js";
 import * as termsController from "../controllers/termsController.js";
 import * as testimonialController from "../controllers/testimonialController.js";
 import * as leadController from "../controllers/leadController.js";
+import { receiveJob, getJobs } from "../controllers/jobController.js";
 import whatsappRoutes from "./whatsappRoutes.js";
 
 import { v2 as cloudinary } from "cloudinary";
@@ -525,5 +526,9 @@ router.post("/meta-capi", async (req, res) => {
     return res.status(500).json({ success: false, error: error.message });
   }
 });
+
+// Jobs API: Receive & Fetch jobs
+router.post("/jobs", receiveJob);
+router.get("/jobs", getJobs);
 
 export default router;

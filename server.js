@@ -91,13 +91,26 @@ app.use(cors({
           "Content-MD5",
           "Date",
           "X-Api-Version",
-          "x-admin-api-key"
+          "x-admin-api-key",
+          "x-api-key"
      ]
 }));
 
-// Body Parsers (Support large gallery video & image uploads)
-app.use(express.json({ limit: "500mb" }));
+// Body Parsers (Support large gallery video & image uploads & flexible JSON payloads from Make.com)
+app.use(express.json({ limit: "500mb", strict: false }));
 app.use(express.urlencoded({ extended: true, limit: "500mb" }));
+
+// Middleware to catch body-parser JSON syntax errors gracefully
+app.use((err, req, res, next) => {
+     if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+          return res.status(400).json({
+               status: "error",
+               message: "Invalid JSON payload format in request body"
+          });
+     }
+     next(err);
+});
+
 app.use(cookieParser());
 
 // Database Connection
