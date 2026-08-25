@@ -37,6 +37,7 @@ import * as policyController from "../controllers/policyController.js";
 import * as termsController from "../controllers/termsController.js";
 import * as testimonialController from "../controllers/testimonialController.js";
 import * as leadController from "../controllers/leadController.js";
+import * as meetController from "../controllers/meetController.js";
 import { receiveJob, getJobs } from "../controllers/jobController.js";
 import whatsappRoutes from "./whatsappRoutes.js";
 
@@ -164,6 +165,8 @@ router.post("/admin/login", authLimiter, makeExpressRoute(adminController.loginA
 router.get("/admin/users", requireAdminForWrites, makeExpressRoute(adminController.getUsers));
 router.post("/admin/users/assign-course", requireAdminForWrites, makeExpressRoute(adminController.assignCourseToUser));
 router.post("/admin/users/revoke-course", requireAdminForWrites, makeExpressRoute(adminController.revokeCourseFromUser));
+router.post("/admin/send-meet-link", requireAdminForWrites, makeExpressRoute(meetController.sendCourseMeetLink));
+router.post("/admin/clear-live-class", requireAdminForWrites, makeExpressRoute(meetController.clearCourseLiveClass));
 router.post("/admin/upload-video", requireAdminForWrites, upload.single("video"), async (req, res) => {
      try {
           if (!req.file) {
