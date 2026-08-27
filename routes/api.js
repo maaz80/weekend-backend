@@ -167,6 +167,8 @@ router.post("/admin/users/assign-course", requireAdminForWrites, makeExpressRout
 router.post("/admin/users/revoke-course", requireAdminForWrites, makeExpressRoute(adminController.revokeCourseFromUser));
 router.post("/admin/send-meet-link", requireAdminForWrites, makeExpressRoute(meetController.sendCourseMeetLink));
 router.post("/admin/clear-live-class", requireAdminForWrites, makeExpressRoute(meetController.clearCourseLiveClass));
+router.post("/admin/create-zoom-meeting", requireAdminForWrites, makeExpressRoute(meetController.createZoomMeetingApi));
+router.post("/admin/sync-zoom-recordings", requireAdminForWrites, makeExpressRoute(meetController.syncZoomRecordings));
 router.post("/admin/upload-video", requireAdminForWrites, upload.single("video"), async (req, res) => {
      try {
           if (!req.file) {

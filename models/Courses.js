@@ -79,7 +79,28 @@ const coursesSchema = new mongoose.Schema({
                     color: String
                }]
           },
-          schemas: [String]
+          schemas: [String],
+          liveClass: {
+               platform: String,
+               meetUrl: String,
+               startUrl: String,
+               zoomMeetingId: String,
+               passcode: String,
+               title: String,
+               scheduledAt: String,
+               instructions: String,
+               active: Boolean,
+               updatedAt: Date
+          },
+          recordings: [{
+               id: String,
+               title: String,
+               videoUrl: String,
+               downloadUrl: String,
+               duration: String,
+               meetingId: String,
+               createdAt: { type: Date, default: Date.now }
+          }]
      }],
      card: {
           title: String,
