@@ -34,6 +34,15 @@ export const getCourses = async (req) => {
                               author: "Jane Doe",
                               startdate: "July 1, 2026",
                               category: "Design",
+                              duration: "6 Months",
+                              mode: "Online / Offline",
+                              batchSize: "10-12 Students",
+                              socialProof: [
+                                   { iconName: "FaStar", value: "4.9 / 5", name: "Google Rating" },
+                                   { iconName: "FaGraduationCap", value: "10,000+", name: "Alumni Trained" },
+                                   { iconName: "FaBriefcase", value: "99%", name: "Placement Rate" },
+                                   { iconName: "FaTrophy", value: "500+", name: "Hiring Partners" }
+                              ],
                               overview: "Learn modern UI/UX design practices using Figma. This course covers everything from wireframing to high-fidelity prototyping and design systems.",
                               promoTitle: "UI UX Design Courses in Delhi at Affordable Fees",
                               promoDescription: "The demand for skilled UI and UX designers has increased rapidly with the rise of digital experiences.\n\nAs a result, UI UX design courses are now more popular than ever. In Delhi, these programs are among the most in-demand career options in today’s time. Our UI/UX design institute has been providing industry-oriented training in these courses since its inception.",
@@ -67,6 +76,37 @@ export const getCourses = async (req) => {
                                              description: "Learn how to build responsive layouts, reusable components, dynamic design systems and interactive high fidelity prototypes in Figma.",
                                              duration: "DURATION: 02 WEEKS",
                                              iconText: "Fg"
+                                        }
+                                   ]
+                              },
+                              jobRoles: {
+                                   tag: "JOB ROLES",
+                                   title: "Job Roles After UI/UX Design Course",
+                                   description: "Unlock exciting career opportunities with in-demand UI/UX design roles. Plan your path from fundamental skills to industry leadership.",
+                                   items: [
+                                        {
+                                             step: "01",
+                                             iconName: "briefcase",
+                                             title: "UI/UX Designer",
+                                             description: "Design intuitive, user-centered digital interfaces and interactive product experiences using modern design systems and prototyping software.",
+                                             keyFocusTitle: "KEY FOCUS AREAS",
+                                             keyFocus: "Wireframing, High-Fidelity Prototyping, Design Systems, Mobile & Web Layouts"
+                                        },
+                                        {
+                                             step: "02",
+                                             iconName: "chart",
+                                             title: "Product Designer",
+                                             description: "Lead end-to-end product design processes, bridging user needs, technical capabilities, and core business growth objectives.",
+                                             keyFocusTitle: "KEY FOCUS AREAS",
+                                             keyFocus: "User Research, Product Strategy, Interaction Design, Cross-Functional Collaboration"
+                                        },
+                                        {
+                                             step: "03",
+                                             iconName: "user",
+                                             title: "UX Researcher & Strategist",
+                                             description: "Conduct usability testing, user interviews, and data-driven analysis to transform insights into user-focused design decisions.",
+                                             keyFocusTitle: "KEY FOCUS AREAS",
+                                             keyFocus: "Usability Testing, User Interviews, Information Architecture, Persona Mapping"
                                         }
                                    ]
                               }
@@ -227,6 +267,30 @@ export const updateCourses = async (req) => {
                                         console.log(`Uploading short term card image for course ${i}, item ${j}...`);
                                         updateData.course[i].shortTerm.items[j].image = await uploadToCloudinary(shortTermFile, "courses/shortterm");
                                         console.log(`Short term card image uploaded successfully: ${updateData.course[i].shortTerm.items[j].image}`);
+                                   }
+                              }
+                         }
+
+                         // Trainer profile images
+                         if (updateData.course[i].trainers && Array.isArray(updateData.course[i].trainers.items)) {
+                              for (let j = 0; j < updateData.course[i].trainers.items.length; j++) {
+                                   const trainerFile = formData.get(`course_${i}_trainer_${j}`);
+                                   if (trainerFile && typeof trainerFile === "object" && typeof trainerFile.arrayBuffer === "function") {
+                                        console.log(`Uploading trainer image for course ${i}, item ${j}...`);
+                                        updateData.course[i].trainers.items[j].image = await uploadToCloudinary(trainerFile, "courses/trainers");
+                                        console.log(`Trainer image uploaded successfully: ${updateData.course[i].trainers.items[j].image}`);
+                                   }
+                              }
+                         }
+
+                         // Hiring partner logo images
+                         if (updateData.course[i].hiringPartners && Array.isArray(updateData.course[i].hiringPartners.items)) {
+                              for (let j = 0; j < updateData.course[i].hiringPartners.items.length; j++) {
+                                   const partnerFile = formData.get(`course_${i}_hiringPartner_${j}`);
+                                   if (partnerFile && typeof partnerFile === "object" && typeof partnerFile.arrayBuffer === "function") {
+                                        console.log(`Uploading hiring partner image for course ${i}, item ${j}...`);
+                                        updateData.course[i].hiringPartners.items[j].image = await uploadToCloudinary(partnerFile, "courses/hiringpartners");
+                                        console.log(`Hiring partner image uploaded successfully: ${updateData.course[i].hiringPartners.items[j].image}`);
                                    }
                               }
                          }

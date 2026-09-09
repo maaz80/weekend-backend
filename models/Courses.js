@@ -15,6 +15,14 @@ const coursesSchema = new mongoose.Schema({
           author: String,
           startdate: String,
           category: String,
+          duration: String,
+          mode: String,
+          batchSize: String,
+          socialProof: [{
+               iconName: String,
+               name: String,
+               value: String
+          }],
           overview: String,
           promoTitle: String,
           promoDescription: String,
@@ -24,6 +32,10 @@ const coursesSchema = new mongoose.Schema({
           brochureSubtext: String,
           brochurePhones: String,
           brochureLink: String,
+          skillsYouWillLearn: {
+               title: String,
+               skills: [String]
+          },
           videos: [{
                video: String,
                alt: String,
@@ -78,6 +90,91 @@ const coursesSchema = new mongoose.Schema({
                     iconName: String,
                     color: String
                }]
+          },
+          trainers: {
+               title: String,
+               subtitle: String,
+               items: [{
+                    name: String,
+                    role: String,
+                    bio: String,
+                    rating: String,
+                    students: String,
+                    image: String,
+                    linkedin: String
+               }]
+          },
+          jobRoles: {
+               tag: String,
+               title: String,
+               description: String,
+               items: [{
+                    title: String,
+                    description: String,
+                    step: String,
+                    iconName: String,
+                    keyFocusTitle: String,
+                    keyFocus: String
+               }]
+          },
+          hiringPartners: {
+               title: String,
+               subtitle: String,
+               items: [{
+                    name: String,
+                    image: String
+               }]
+          },
+          chooseLearning: {
+               title: String,
+               subtitle: String,
+               emi: {
+                    title: String,
+                    subtitle: String,
+                    bannerTitle: String,
+                    bannerSubtitle: String,
+                    points: [String]
+               },
+               scholarship: {
+                    title: String,
+                    subtitle: String,
+                    discountAmount: String,
+                    discountLabel: String,
+                    discountText: String,
+                    discountSubtext: String,
+                    meritTitle: String,
+                    meritSubtitle: String,
+                    points: [String]
+               },
+               batches: {
+                    title: String,
+                    subtitle: String,
+                    items: [{
+                         dayDate: String,
+                         month: String,
+                         title: String,
+                         time: String,
+                         status: String
+                    }]
+               }
+          },
+          whyChooseUs: {
+               title: String,
+               subtitle: String,
+               items: [{
+                    title: String,
+                    description: String,
+                    iconName: String,
+                    color: String
+               }]
+          },
+          readyToStartJourney: {
+               title: String,
+               subtitle: String,
+               button1Text: String,
+               button1Link: String,
+               button2Text: String,
+               button2Link: String
           },
           schemas: [String],
           liveClass: {
