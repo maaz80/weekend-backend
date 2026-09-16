@@ -1,6 +1,6 @@
 const WINDOW_MS = 15 * 60 * 1000;
-const MAX_REQUESTS_PER_IP = 5;
-const MAX_REQUESTS_PER_TARGET = 3;
+const MAX_REQUESTS_PER_IP = 50;
+const MAX_REQUESTS_PER_TARGET = 15;
 
 const ipAttempts = new Map();
 const targetAttempts = new Map();
@@ -18,6 +18,7 @@ const getClientIp = (req) => {
 };
 
 const isLimited = (store, key, maxRequests) => {
+     if (!key || key === "::" || key === ":") return false;
      const now = Date.now();
      const record = store.get(key);
 
@@ -54,17 +55,16 @@ export const otpRateLimit = (req, res, next) => {
      const ip = getClientIp(req);
      const phone = normalizeTarget(req.body?.phone);
      const email = normalizeTarget(req.body?.email);
-     const targetKey = `${phone}:${email}`;
 
      if (isLimited(ipAttempts, ip, MAX_REQUESTS_PER_IP)) {
           return res.status(429).json({
-               error: "Too many OTP requests from this IP. Please try again after 15 minutes."
+               error: "Too many OTP requests from this IP. Please try again after a few minutes."
           });
      }
 
-     if (phone && email && isLimited(targetAttempts, targetKey, MAX_REQUESTS_PER_TARGET)) {
+     if ((phone || email) && isLimited(targetAttempts, `${phone}:${email}`, MAX_REQUESTS_PER_TARGET)) {
           return res.status(429).json({
-               error: "Too many OTP requests for this phone/email. Please try again after 15 minutes."
+               error: "Too many OTP requests for this phone/email. Please try again after a few minutes."
           });
      }
 

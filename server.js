@@ -41,12 +41,16 @@ app.use(globalLimiter);
 const defaultAllowedOrigins = [
      "https://weekendux.in",
      "https://www.weekendux.in",
-     "https://admin.weekendux.in",
+     // "https://admin.weekendux.in",
      "https://weekend-ux-admin.netlify.app",
      // "http://localhost:3000",
+     // "http://localhost:3001",
+     // "http://localhost:5000",
      // "http://localhost:5173",
      // "http://localhost:5174",
-     // "http://localhost:5175"
+     // "http://localhost:5175",
+     // "http://127.0.0.1:3000",
+     // "http://127.0.0.1:5173"
 ];
 
 const customOrigins = (process.env.CLIENT_URL || process.env.ALLOWED_ORIGINS || "")
@@ -61,7 +65,7 @@ const isAllowedDomain = (origin) => {
      if (allowedOrigins.includes(origin)) return true;
      try {
           const host = new URL(origin).hostname;
-          if (host.endsWith("weekendux.in") || host.endsWith("vercel.app") || host.endsWith("onrender.com")) {
+          if (host === "localhost" || host === "127.0.0.1" || host.endsWith("weekendux.in") || host.endsWith("vercel.app") || host.endsWith("onrender.com") || host.endsWith("netlify.app")) {
                return true;
           }
      } catch {

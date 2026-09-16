@@ -235,6 +235,28 @@ export const submitLead = async (req) => {
                console.error("❌ Failed to send lead notification to admin:", adminEmailErr);
           }
 
+          // Push lead data to Google Sheet asynchronously (non-blocking)
+          const googleSheetWebhookUrl = process.env.GOOGLE_SHEET_WEBHOOK_URL;
+          if (googleSheetWebhookUrl) {
+               fetch(googleSheetWebhookUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                         timestamp: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+                         name: name || "",
+                         email: email || "",
+                         phone: leadPhone || "",
+                         source: leadSource || "Website Lead",
+                         course: courseName || (courseId ? String(courseId) : "General Inquiry"),
+                         answers: answers ? (typeof answers === "object" ? JSON.stringify(answers) : String(answers)) : ""
+                    })
+               }).then(() => {
+                    console.log("✅ Lead successfully sent to Google Sheet!");
+               }).catch((sheetErr) => {
+                    console.error("❌ Failed to push lead to Google Sheet:", sheetErr.message);
+               });
+          }
+
           return NextResponse.json({ success: true, message: "Lead submitted successfully", lead });
      } catch (error) {
           console.error("Error saving lead:", error);
