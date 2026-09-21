@@ -30,7 +30,8 @@ const upload = multer({
           fileSize: MAX_FILE_SIZE_BYTES,
           files: 50,
           fields: 50,
-          fieldNestingDepth: 5
+          fieldNestingDepth: 5,
+          fieldArrayIndexLimit: 100
      }
 });
 
