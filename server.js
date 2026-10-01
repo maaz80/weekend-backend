@@ -29,7 +29,7 @@ app.use(helmet({
 // Global Rate Limiter: Prevent DoS & Abuse across all endpoints
 const globalLimiter = rateLimit({
      windowMs: 15 * 60 * 1000, // 15 minutes
-     max: 300, // Limit each IP to 300 requests per windowMs
+     max: process.env.NODE_ENV === "production" ? 300 : 10000, // Limit each IP to 10000 requests in development
      standardHeaders: true,
      legacyHeaders: false,
      validate: { xForwardedForHeader: false },
@@ -41,16 +41,16 @@ app.use(globalLimiter);
 const defaultAllowedOrigins = [
      "https://weekendux.in",
      "https://www.weekendux.in",
-     // "https://admin.weekendux.in",
      "https://weekend-ux-admin.netlify.app",
-     // "http://localhost:3000",
-     // "http://localhost:3001",
-     // "http://localhost:5000",
-     // "http://localhost:5173",
+     "https://weekend-ux-crm.netlify.app",
+     "https://weekend-ux-erp.netlify.app",
      // "http://localhost:5174",
+     // "http://127.0.0.1:5174",
      // "http://localhost:5175",
-     // "http://127.0.0.1:3000",
-     // "http://127.0.0.1:5173"
+     // "http://127.0.0.1:5175",
+     // "http://localhost:5173",
+     // "http://127.0.0.1:5173",
+     // "http://localhost:3000"
 ];
 
 const customOrigins = (process.env.CLIENT_URL || process.env.ALLOWED_ORIGINS || "")

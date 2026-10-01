@@ -2,6 +2,7 @@ import { generateAndSendOTP, verifyOTP } from "../services/otpService.js";
 import { transporter } from "../config/mailer.js";
 import connectDB from "../config/db.js";
 import { NextResponse } from "next/server";
+import { syncLeadToGoogleSheet } from "../services/sheetService.js";
 
 export const sendOTP = async (req) => {
      try {
@@ -128,42 +129,31 @@ export const verifyOTPAndSubmit = async (req) => {
 
           console.log(`✅ Booking email sent to admin for: ${email}`);
 
-          // Save lead to DB
+          // Save lead directly to unified CRM Leads
           try {
-               const Lead = (await import("../models/Lead.js")).default;
-               const lead = new Lead({
+               const { ingestUnifiedLead } = await import("../services/leadService.js");
+               await ingestUnifiedLead({
                     name: fullName,
                     email,
                     phone,
+                    course: courseName || "General Inquiry",
                     source: finalSource,
                     answers: { message, course: courseName, courseId: courseId || "" }
                });
-               await lead.save();
           } catch (leadSaveErr) {
-               console.error("Failed to save OTP lead to DB:", leadSaveErr);
+               console.error("Failed to save OTP lead to CRM DB:", leadSaveErr);
           }
 
           // Push lead data to Google Sheet asynchronously (non-blocking)
-          const googleSheetWebhookUrl = process.env.GOOGLE_SHEET_WEBHOOK_URL;
-          if (googleSheetWebhookUrl) {
-               fetch(googleSheetWebhookUrl, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                         timestamp: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
-                         name: fullName || "",
-                         email: email || "",
-                         phone: phone || "",
-                         source: finalSource,
-                         course: courseName,
-                         answers: message ? (typeof message === "object" ? JSON.stringify(message) : String(message)) : ""
-                    })
-               }).then(() => {
-                    console.log("✅ Verified booking lead successfully sent to Google Sheet!");
-               }).catch((sheetErr) => {
-                    console.error("❌ Failed to push booking lead to Google Sheet:", sheetErr.message);
-               });
-          }
+          syncLeadToGoogleSheet({
+               name: fullName,
+               email,
+               phone,
+               source: finalSource,
+               course: courseName,
+               answers: message || "",
+               status: "Pending"
+          });
 
           // Delete OTP record after successful submission
           const OTP = await import("../models/otpModel.js");

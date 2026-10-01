@@ -40,6 +40,10 @@ import * as leadController from "../controllers/leadController.js";
 import * as meetController from "../controllers/meetController.js";
 import { receiveJob, getJobs } from "../controllers/jobController.js";
 import whatsappRoutes from "./whatsappRoutes.js";
+import crmLeadRoutes from "./crmLeadRoutes.js";
+import crmAuthRoutes from "./crmAuthRoutes.js";
+import erpRoutes from "./erpRoutes.js";
+import erpAuthRoutes from "./erpAuthRoutes.js";
 
 import { v2 as cloudinary } from "cloudinary";
 import Courses from "../models/Courses.js";
@@ -535,5 +539,14 @@ router.post("/meta-capi", async (req, res) => {
 // Jobs API: Receive & Fetch jobs
 router.post("/jobs", receiveJob);
 router.get("/jobs", getJobs);
+
+// CRM Routes (Pipeline, Leads, Analytics, AutoSync & CRM Authentication)
+router.use("/crm/auth", crmAuthRoutes);
+router.use("/crm/leads", crmLeadRoutes);
+router.use("/crm", crmLeadRoutes);
+
+// ERP Routes (Students, Batches, Fees & Installments, Attendance, CRM Sync & ERP Authentication)
+router.use("/erp/auth", erpAuthRoutes);
+router.use("/erp", erpRoutes);
 
 export default router;

@@ -18,6 +18,8 @@ const coursesSchema = new mongoose.Schema({
           duration: String,
           mode: String,
           batchSize: String,
+          price: { type: Number, default: 0 },
+          fee: { type: Number, default: 0 },
           socialProof: [{
                iconName: String,
                name: String,

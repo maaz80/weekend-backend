@@ -88,7 +88,12 @@ export function triggerFrontendBuild(modelName = "Content", docId = "") {
 
 // Global Mongoose plugin that listens to all CRUD operations
 export function buildTriggerPlugin(schema) {
-     const ignoredModels = ["OTP", "User", "Auth", "Lead", "Booking", "otp", "user", "auth", "lead", "booking", "otps", "users", "leads", "bookings"];
+     const ignoredModels = [
+          "OTP", "User", "Auth", "Lead", "Booking", "otp", "user", "auth", "lead", "booking", "otps", "users", "leads", "bookings",
+          "CrmLead", "crmlead", "crmleads", "WhatsAppLead", "whatsapplead", "whatsappleads",
+          "ErpStudent", "erpstudent", "erpstudents", "ErpBatch", "erpbatch", "erpbatches",
+          "ErpPayment", "erppayment", "erppayments"
+     ];
 
      const handleTrigger = (doc, rawModelName) => {
           const modelName = rawModelName || "Content";

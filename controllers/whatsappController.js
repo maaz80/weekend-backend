@@ -2,6 +2,8 @@ import WhatsAppLead from "../models/WhatsAppLead.js";
 import WhatsAppMessage from "../models/WhatsAppMessage.js";
 import { processConversation } from "../services/whatsappChatbotService.js";
 import { sendWhatsAppText } from "../services/whatsappService.js";
+import { syncWhatsAppLeadToSheet } from "../services/sheetService.js";
+import { syncWhatsAppLeadToCrm } from "../services/leadService.js";
 
 /**
  * GET /api/whatsapp/webhook - Webhook Verification Endpoint called by Meta
@@ -102,8 +104,15 @@ export const handleWebhook = async (req, res) => {
         name: contactInfo,
         status: "new",
         current_step: "START",
-        source: "website_whatsapp"
+        source: "website_whatsapp",
+        notes: (inboundText && !interactiveId) ? inboundText : ""
       });
+      syncWhatsAppLeadToSheet(lead, userPhone);
+      syncWhatsAppLeadToCrm(lead).catch((err) => console.error("Error syncing WA lead to CRM:", err));
+    } else if (!lead.notes && inboundText && !interactiveId && !inboundText.startsWith("[")) {
+      lead.notes = inboundText;
+      await lead.save();
+      syncWhatsAppLeadToCrm(lead).catch((err) => console.error("Error syncing WA lead to CRM:", err));
     }
 
     // 5. Save Inbound Message

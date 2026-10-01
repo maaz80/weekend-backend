@@ -1,8 +1,10 @@
-import Lead from "../models/Lead.js";
+import CrmLead from "../models/CrmLead.js";
 import Courses from "../models/Courses.js";
 import { transporter } from "../config/mailer.js";
 import connectDB from "../config/db.js";
 import { NextResponse } from "next/server";
+import { syncLeadToGoogleSheet } from "../services/sheetService.js";
+import { ingestUnifiedLead } from "../services/leadService.js";
 
 export const submitLead = async (req) => {
      try {
@@ -22,16 +24,6 @@ export const submitLead = async (req) => {
           // Determine lead source
           const leadSource = source || (answers?.welcome_service ? "Chatbot Inquiry" : "Website Lead");
           const leadPhone = phone || answers?.contact_phone || "";
-
-          // Save lead to database
-          const lead = new Lead({
-               name,
-               email,
-               phone: leadPhone,
-               source: leadSource,
-               answers: answers || {}
-          });
-          await lead.save();
 
           // Try to look up the course for syllabus details if courseId is provided
           let courseItem = null;
@@ -99,6 +91,17 @@ export const submitLead = async (req) => {
                     console.error("Error generating syllabus content for email:", lookupErr);
                }
           }
+
+          // Ingest directly into unified CRM Leads collection
+          const finalCourseName = courseName || (courseItem ? courseItem.title : (answers?.course || "UI/UX Design Course"));
+          const { lead } = await ingestUnifiedLead({
+               name,
+               email,
+               phone: leadPhone,
+               course: finalCourseName,
+               source: leadSource,
+               answers: answers || {}
+          });
 
           // Send Syllabus Email to user (ONLY if they filled form on a specific course page and course is found)
           if (courseItem && syllabusHtml) {
@@ -236,26 +239,15 @@ export const submitLead = async (req) => {
           }
 
           // Push lead data to Google Sheet asynchronously (non-blocking)
-          const googleSheetWebhookUrl = process.env.GOOGLE_SHEET_WEBHOOK_URL;
-          if (googleSheetWebhookUrl) {
-               fetch(googleSheetWebhookUrl, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                         timestamp: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
-                         name: name || "",
-                         email: email || "",
-                         phone: leadPhone || "",
-                         source: leadSource || "Website Lead",
-                         course: courseName || (courseId ? String(courseId) : "General Inquiry"),
-                         answers: answers ? (typeof answers === "object" ? JSON.stringify(answers) : String(answers)) : ""
-                    })
-               }).then(() => {
-                    console.log("✅ Lead successfully sent to Google Sheet!");
-               }).catch((sheetErr) => {
-                    console.error("❌ Failed to push lead to Google Sheet:", sheetErr.message);
-               });
-          }
+          syncLeadToGoogleSheet({
+               name,
+               email,
+               phone: leadPhone,
+               source: leadSource || "Website Lead",
+               course: courseName || (courseId ? String(courseId) : "General Inquiry"),
+               answers: answers || "",
+               status: "Pending"
+          });
 
           return NextResponse.json({ success: true, message: "Lead submitted successfully", lead });
      } catch (error) {
@@ -267,7 +259,7 @@ export const submitLead = async (req) => {
 export const getLeads = async (req) => {
      try {
           await connectDB();
-          const leads = await Lead.find().sort({ createdAt: -1 });
+          const leads = await CrmLead.find().sort({ createdAt: -1 });
           return NextResponse.json(leads);
      } catch (error) {
           console.error("Error fetching leads:", error);

@@ -3,6 +3,13 @@ import {
   sendWhatsAppInteractiveButtons,
   sendWhatsAppInteractiveList
 } from "./whatsappService.js";
+import { syncWhatsAppLeadToSheet } from "./sheetService.js";
+import { syncWhatsAppLeadToCrm } from "./leadService.js";
+
+const syncLeadState = (lead, phone) => {
+  syncWhatsAppLeadToSheet(lead, phone);
+  syncWhatsAppLeadToCrm(lead).catch((err) => console.error("Error syncing WA lead to CRM:", err));
+};
 
 /**
  * Process incoming WhatsApp message for Weekend UX (State Machine & Intent Rules)
@@ -34,6 +41,7 @@ export async function processConversation({ lead, text, phone, interactiveId }) 
     lead.status = "human_handover";
     lead.current_step = "HUMAN_HANDOVER";
     await lead.save();
+    syncLeadState(lead, phone);
 
     const replyText = "Sure! A Weekend UX senior counselor will connect with you on this WhatsApp number shortly.";
     await sendWhatsAppText(phone, replyText);
@@ -127,16 +135,17 @@ export async function processConversation({ lead, text, phone, interactiveId }) 
       lead.current_step = "ASK_GOAL";
       lead.status = "in_progress";
       await lead.save();
+      syncLeadState(lead, phone);
 
       return sendExperienceButtons(phone, selectedService);
     }
 
     case "ASK_GOAL": {
-      let selectedExp = "Beginner";
+      let selectedExp = "Complete Beginner";
       if (actionId.startsWith("exp_")) {
         if (actionId.includes("beginner")) selectedExp = "Complete Beginner";
-        else if (actionId.includes("selftaught")) selectedExp = "Self-Taught / Basic Figma";
-        else if (actionId.includes("switcher")) selectedExp = "Switching to Design";
+        else if (actionId.includes("selftaught")) selectedExp = "Self-Taught Figma";
+        else if (actionId.includes("switcher")) selectedExp = "Switching to UX";
         else if (actionId.includes("pro")) selectedExp = "Software Dev / Product Manager";
       } else if (text) {
         selectedExp = text;
@@ -145,6 +154,7 @@ export async function processConversation({ lead, text, phone, interactiveId }) 
       lead.experience_or_budget = selectedExp;
       lead.current_step = "ASK_BATCH";
       await lead.save();
+      syncLeadState(lead, phone);
 
       return sendBatchButtons(phone);
     }
@@ -152,9 +162,9 @@ export async function processConversation({ lead, text, phone, interactiveId }) 
     case "ASK_BATCH": {
       let selectedBatch = "Weekend Batches";
       if (actionId.startsWith("batch_")) {
-        if (actionId.includes("weekend")) selectedBatch = "Weekend Live Batches (Sat-Sun)";
-        else if (actionId.includes("weekday")) selectedBatch = "Weekday Evening Batches (Mon-Fri)";
-        else if (actionId.includes("1on1")) selectedBatch = "1-on-1 Mentorship (Flexible)";
+        if (actionId.includes("weekend")) selectedBatch = "Weekend Batches";
+        else if (actionId.includes("weekday")) selectedBatch = "Weekday Evenings";
+        else if (actionId.includes("1on1")) selectedBatch = "1-on-1 Flexible";
         else if (actionId.includes("selfpaced")) selectedBatch = "Self-Paced + Live Doubts";
       } else if (text) {
         selectedBatch = text;
@@ -163,6 +173,7 @@ export async function processConversation({ lead, text, phone, interactiveId }) 
       lead.preferred_contact_time = selectedBatch;
       lead.current_step = "ASK_NAME";
       await lead.save();
+      syncLeadState(lead, phone);
 
       const replyText = "May I please know your **Full Name**?";
       await sendWhatsAppText(phone, replyText);
@@ -175,6 +186,7 @@ export async function processConversation({ lead, text, phone, interactiveId }) 
       lead.current_step = "QUALIFIED";
       lead.status = "qualified";
       await lead.save();
+      syncLeadState(lead, phone);
 
       const summaryText =
         `Thank you ${lead.name}! Your Weekend UX course inquiry is confirmed.\n\n` +
