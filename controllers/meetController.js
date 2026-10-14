@@ -22,7 +22,10 @@ export const sendCourseMeetLink = async (req) => {
                title,
                scheduledAt,
                instructions,
-               saveToCourse = true
+               saveToCourse = true,
+               trainerEmails = [],
+               counselorEmails = [],
+               extraStudentEmails = []
           } = body;
 
           if (!meetUrl) {
@@ -33,6 +36,25 @@ export const sendCourseMeetLink = async (req) => {
           if (!meetUrl.startsWith("http://") && !meetUrl.startsWith("https://")) {
                return NextResponse.json({ error: "Please provide a valid Zoom link (starting with https://)" }, { status: 400 });
           }
+
+          // Helper to parse emails from array or comma/space/newline separated string
+          const parseEmailList = (input) => {
+               if (!input) return [];
+               if (Array.isArray(input)) {
+                    return input.flatMap(item => parseEmailList(item));
+               }
+               if (typeof input === "string") {
+                    return input
+                         .split(/[\s,;]+/)
+                         .map(e => e.trim().toLowerCase())
+                         .filter(e => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e));
+               }
+               return [];
+          };
+
+          const parsedTrainers = parseEmailList(trainerEmails);
+          const parsedCounselors = parseEmailList(counselorEmails);
+          const parsedExtraStudents = parseEmailList(extraStudentEmails);
 
           // 1. Save / Update Active Live Class on Course document in MongoDB FIRST
           let savedCourseName = "selected courses";
@@ -49,6 +71,9 @@ export const sendCourseMeetLink = async (req) => {
                          scheduledAt: scheduledAt || "Live Now",
                          instructions: instructions || "",
                          active: true,
+                         trainerEmails: parsedTrainers,
+                         counselorEmails: parsedCounselors,
+                         extraStudentEmails: parsedExtraStudents,
                          updatedAt: new Date()
                     });
 
@@ -99,10 +124,105 @@ export const sendCourseMeetLink = async (req) => {
                targetUsers = await User.find().select("name email").lean();
           }
 
-          // 3. Dispatch Professional HTML Emails to Enrolled Students
-          const emailPromises = targetUsers.map(user => {
-               const studentName = user.name || "Student";
-               const emailSubject = `🔵 Live Zoom Class Invitation: ${title || courseTitle || "Weekend UX Session"}`;
+          // 3. Build Unified Recipients Map (Enrolled Students + Extra Students + Counselors + Trainers)
+          const recipientsMap = new Map();
+
+          // A. Enrolled Students
+          for (const user of targetUsers) {
+               if (user && user.email) {
+                    const email = user.email.trim().toLowerCase();
+                    if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                         recipientsMap.set(email, {
+                              email,
+                              name: user.name || "Student",
+                              role: "student",
+                              roleLabel: "Enrolled Student"
+                         });
+                    }
+               }
+          }
+
+          // B. Extra Students
+          for (const email of parsedExtraStudents) {
+               if (!recipientsMap.has(email)) {
+                    recipientsMap.set(email, {
+                         email,
+                         name: "Student",
+                         role: "student",
+                         roleLabel: "Student"
+                    });
+               }
+          }
+
+          // C. Counselors
+          for (const email of parsedCounselors) {
+               recipientsMap.set(email, {
+                    email,
+                    name: "Counselor",
+                    role: "counselor",
+                    roleLabel: "Counselor"
+               });
+          }
+
+          // D. Trainers (take role precedence)
+          for (const email of parsedTrainers) {
+               recipientsMap.set(email, {
+                    email,
+                    name: "Trainer",
+                    role: "trainer",
+                    roleLabel: "Trainer"
+               });
+          }
+
+          // Enrich custom email names from existing User records if available
+          const allCustomEmails = [...parsedTrainers, ...parsedCounselors, ...parsedExtraStudents];
+          if (allCustomEmails.length > 0) {
+               try {
+                    const foundUsers = await User.find({ email: { $in: allCustomEmails } }).select("name email").lean();
+                    for (const u of foundUsers) {
+                         if (u && u.email && u.name) {
+                              const r = recipientsMap.get(u.email.toLowerCase());
+                              if (r && (!r.name || r.name === "Student" || r.name === "Trainer" || r.name === "Counselor")) {
+                                   r.name = u.name;
+                              }
+                         }
+                    }
+               } catch (e) {
+                    console.warn("Could not enrich user names:", e.message);
+               }
+          }
+
+          const recipients = Array.from(recipientsMap.values());
+
+          if (recipients.length === 0) {
+               return NextResponse.json({
+                    success: true,
+                    message: "Zoom meeting saved to course! No enrolled students or extra emails found to dispatch emails.",
+                    sentCount: 0,
+                    totalRecipients: 0
+               });
+          }
+
+          // 4. Dispatch Professional HTML Emails to All Recipients
+          const emailPromises = recipients.map(recipient => {
+               const displayName = recipient.name || (
+                    recipient.role === "trainer" ? "Trainer" :
+                    recipient.role === "counselor" ? "Counselor" : "Student"
+               );
+
+               const roleDescription = recipient.role === "trainer"
+                    ? "You are invited to lead / participate in the live interactive Zoom session"
+                    : recipient.role === "counselor"
+                    ? "You are invited to join the live interactive Zoom session as a counselor"
+                    : "You are invited to join an exclusive live interactive Zoom class";
+
+               const rolePillClass = recipient.role === "trainer"
+                    ? "role-pill role-pill-trainer"
+                    : recipient.role === "counselor"
+                    ? "role-pill role-pill-counselor"
+                    : "role-pill role-pill-student";
+
+               const emailSubject = `🎓 Live Zoom Class Invitation: ${title || courseTitle || "Weekend UX Session"}`;
 
                const htmlBody = `
                <!DOCTYPE html>
@@ -111,64 +231,76 @@ export const sendCourseMeetLink = async (req) => {
                     <meta charset="utf-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <style>
-                         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
-                         body { font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5; margin: 0; padding: 32px 16px; color: #171717; -webkit-font-smoothing: antialiased; }
-                         .container { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 20px; border: 1px solid #e5e5e5; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); }
-                         .header { background: #2D8CFF; padding: 32px; text-align: center; color: #ffffff; border-bottom: 4px solid #171717; }
-                         .header-title { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: #ffffff; text-transform: uppercase; }
-                         .header-subtitle { font-size: 11px; font-weight: 700; color: #ffffff; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 6px; }
-                         .body-content { padding: 32px; }
-                         .student-greeting { font-size: 20px; font-weight: 700; color: #171717; margin-top: 0; margin-bottom: 12px; }
-                         .intro-text { font-size: 14px; line-height: 1.6; color: #404040; margin: 0 0 24px 0; }
-                         .course-badge { display: inline-block; background: #171717; color: #2D8CFF; font-size: 11px; font-weight: 700; padding: 6px 14px; border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
-                         .details-card { background: #fafafa; border: 1px solid #e5e5e5; border-radius: 14px; padding: 20px; margin-bottom: 24px; }
-                         .controls-badge-wrap { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-                         .ctrl-pill { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; background: #eef2ff; color: #3730a3; }
-                         .cta-container { text-align: center; margin: 28px 0 20px 0; }
-                         .cta-btn { display: inline-block; background: #2D8CFF; color: #ffffff; font-size: 15px; font-weight: 800; text-decoration: none; padding: 16px 36px; border-radius: 12px; box-shadow: 0 4px 14px rgba(45, 140, 255, 0.4); text-transform: uppercase; letter-spacing: 0.5px; }
-                         .link-fallback { font-size: 12px; color: #737373; text-align: center; margin-top: 20px; word-break: break-all; }
-                         .link-fallback a { color: #2D8CFF; font-weight: 700; text-decoration: underline; }
-                         .footer { background: #fafafa; padding: 24px 32px; text-align: center; font-size: 12px; color: #737373; border-top: 1px solid #f5f5f5; line-height: 1.6; }
+                         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=Urbanist:wght@400;500;600;700;800;900&display=swap');
+                         body { font-family: 'Urbanist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #F8F6EE; margin: 0; padding: 36px 16px; color: #171717; -webkit-font-smoothing: antialiased; }
+                         .container { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 20px; border: 1px solid #EAE6DA; overflow: hidden; box-shadow: 0 12px 35px rgba(0, 0, 0, 0.06); }
+                         .header { background: #171717; padding: 32px 24px 26px 24px; text-align: center; border-bottom: 4px solid #FFD400; }
+                         .brand-sub { font-family: 'Urbanist', sans-serif; font-size: 10px; font-weight: 800; color: #FFD400; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+                         .brand-title { margin: 0; font-family: 'Playfair Display', Georgia, serif; font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; }
+                         .brand-title span { color: #FFD400; font-style: italic; }
+                         .live-pill { display: inline-block; background: rgba(255, 212, 0, 0.15); border: 1px solid rgba(255, 212, 0, 0.35); color: #FFD400; font-family: 'Urbanist', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; padding: 4px 14px; border-radius: 9999px; margin-top: 12px; }
+                         .body-content { padding: 36px 32px 30px 32px; }
+                         .course-badge { display: inline-block; background: #171717; color: #FFD400; font-family: 'Urbanist', sans-serif; font-size: 11px; font-weight: 800; padding: 6px 14px; border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
+                         .role-pill { display: inline-block; font-family: 'Urbanist', sans-serif; font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 20px; margin-left: 6px; }
+                         .role-pill-trainer { background: #FFF3D8; color: #9C4C00; border: 1px solid #EE9A00; }
+                         .role-pill-counselor { background: #EBF9EF; color: #0E8147; border: 1px solid #D6EBDC; }
+                         .role-pill-student { background: #F4F4F5; color: #171717; border: 1px solid #E4E4E7; }
+                         .student-greeting { font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 700; color: #171717; margin-top: 0; margin-bottom: 12px; }
+                         .intro-text { font-family: 'Urbanist', sans-serif; font-size: 14px; line-height: 1.6; color: #404040; margin: 0 0 24px 0; }
+                         .details-card { background: #FAF8F2; border: 1px solid #ECE7D9; border-left: 4px solid #FFD400; border-radius: 14px; padding: 20px; margin-bottom: 24px; }
+                         .cta-container { text-align: center; margin: 30px 0 20px 0; }
+                         .cta-btn { display: inline-block; background: #FFD400; color: #171717 !important; font-family: 'Urbanist', sans-serif; font-size: 15px; font-weight: 900; text-decoration: none; padding: 16px 36px; border-radius: 12px; box-shadow: 0 6px 20px rgba(255, 212, 0, 0.45); text-transform: uppercase; letter-spacing: 0.5px; }
+                         .link-fallback { font-family: 'Urbanist', sans-serif; font-size: 12px; color: #737373; text-align: center; margin-top: 20px; word-break: break-all; }
+                         .link-fallback a { color: #171717; font-weight: 800; text-decoration: underline; }
+                         .footer { background: #171717; padding: 24px 32px; text-align: center; font-family: 'Urbanist', sans-serif; font-size: 12px; color: #A3A3A3; border-top: 1px solid #262626; line-height: 1.6; }
+                         .footer strong { color: #ffffff; }
+                         .footer span { color: #FFD400; }
                     </style>
                </head>
                <body>
                     <div class="container">
                          <div class="header">
-                              <div class="header-title">WEEKEND UX</div>
-                              <div class="header-subtitle">🔵 LIVE ZOOM INTERACTIVE CLASS</div>
+                              <div class="brand-sub">WEEKEND UX LIVE CLASSROOM</div>
+                              <h1 class="brand-title">Weekend <span>UX</span></h1>
+                              <div class="live-pill">
+                                   ● LIVE ZOOM INTERACTIVE CLASS
+                              </div>
                          </div>
                          <div class="body-content">
-                              <span class="course-badge">${courseTitle || "Enrolled Course"}</span>
-                              <h2 class="student-greeting">Hello ${studentName},</h2>
+                              <div>
+                                   <span class="course-badge">${courseTitle || "Enrolled Course"}</span>
+                                   <span class="${rolePillClass}">${recipient.roleLabel}</span>
+                              </div>
+                              <h2 class="student-greeting">Hello ${displayName},</h2>
                               <p class="intro-text">
-                                   You are invited to join an exclusive live interactive Zoom class for <strong>${courseTitle || "UI/UX Program"}</strong>. Click below to enter your student meeting room.
+                                   ${roleDescription} for <strong>${courseTitle || "UI/UX Program"}</strong>. Click below to enter your meeting room.
                               </p>
 
                               <div class="details-card">
                                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
                                         <tr>
-                                             <td style="padding: 6px 0; font-size: 11px; font-weight: 700; color: #737373; text-transform: uppercase; width: 100px;">Topic:</td>
-                                             <td style="padding: 6px 0; font-size: 14px; font-weight: 700; color: #171717;">${title || "Live Mentorship & Q/A"}</td>
+                                             <td style="padding: 6px 0; font-size: 11px; font-weight: 800; color: #737373; text-transform: uppercase; width: 110px;">Topic:</td>
+                                             <td style="padding: 6px 0; font-size: 14px; font-weight: 800; color: #171717;">${title || "Live Mentorship & Q/A"}</td>
                                         </tr>
                                         <tr>
-                                             <td style="padding: 6px 0; font-size: 11px; font-weight: 700; color: #737373; text-transform: uppercase;">Scheduled Time:</td>
-                                             <td style="padding: 6px 0; font-size: 14px; font-weight: 700; color: #2563eb;">${scheduledAt || "Live Now"}</td>
+                                             <td style="padding: 6px 0; font-size: 11px; font-weight: 800; color: #737373; text-transform: uppercase;">Scheduled Time:</td>
+                                             <td style="padding: 6px 0; font-size: 14px; font-weight: 800; color: #171717;"><span style="background: #FFD400/20; padding: 2px 6px; border-radius: 4px;">${scheduledAt || "Live Now"}</span></td>
                                         </tr>
                                         ${zoomMeetingId ? `
                                         <tr>
-                                             <td style="padding: 6px 0; font-size: 11px; font-weight: 700; color: #737373; text-transform: uppercase;">Meeting ID:</td>
-                                             <td style="padding: 6px 0; font-size: 13px; font-weight: 700; color: #171717;">${zoomMeetingId}</td>
+                                             <td style="padding: 6px 0; font-size: 11px; font-weight: 800; color: #737373; text-transform: uppercase;">Meeting ID:</td>
+                                             <td style="padding: 6px 0; font-size: 13px; font-weight: 800; color: #171717;">${zoomMeetingId}</td>
                                         </tr>
                                         ` : ''}
                                         ${passcode ? `
                                         <tr>
-                                             <td style="padding: 6px 0; font-size: 11px; font-weight: 700; color: #737373; text-transform: uppercase;">Passcode:</td>
-                                             <td style="padding: 6px 0; font-size: 13px; font-weight: 700; color: #171717;">${passcode}</td>
+                                             <td style="padding: 6px 0; font-size: 11px; font-weight: 800; color: #737373; text-transform: uppercase;">Passcode:</td>
+                                             <td style="padding: 6px 0; font-size: 13px; font-weight: 800; color: #171717;">${passcode}</td>
                                         </tr>
                                         ` : ''}
                                         ${instructions ? `
                                         <tr>
-                                             <td style="padding: 6px 0; font-size: 11px; font-weight: 700; color: #737373; text-transform: uppercase; vertical-align: top;">Notes:</td>
+                                             <td style="padding: 6px 0; font-size: 11px; font-weight: 800; color: #737373; text-transform: uppercase; vertical-align: top;">Notes:</td>
                                              <td style="padding: 6px 0; font-size: 13px; font-weight: 600; color: #404040;">${instructions}</td>
                                         </tr>
                                         ` : ''}
@@ -177,7 +309,7 @@ export const sendCourseMeetLink = async (req) => {
 
                               <div class="cta-container">
                                    <a href="${meetUrl}" target="_blank" class="cta-btn">
-                                        🔵 Click Here To Join Zoom Meeting
+                                        ⚡ Click Here To Join Zoom Meeting
                                    </a>
                               </div>
 
@@ -186,8 +318,8 @@ export const sendCourseMeetLink = async (req) => {
                               </p>
                          </div>
                          <div class="footer">
-                              <strong>Weekend UX Design School</strong><br>
-                              This notification was automatically sent to enrolled students.<br>
+                              <strong>Weekend <span>UX</span> Design School</strong><br>
+                              This notification was automatically sent to session participants.<br>
                               © 2026 Weekend UX. All rights reserved.
                          </div>
                     </div>
@@ -197,11 +329,11 @@ export const sendCourseMeetLink = async (req) => {
 
                return transporter.sendMail({
                     from: `"Weekend UX Live" <${process.env.SMTP_USER || "info@weekendux.in"}>`,
-                    to: user.email,
+                    to: recipient.email,
                     subject: emailSubject,
                     html: htmlBody
                }).catch(err => {
-                    console.error(`Failed sending Zoom meet link email to ${user.email}:`, err.message);
+                    console.error(`Failed sending Zoom meet link email to ${recipient.email}:`, err.message);
                     return null;
                });
           });
@@ -209,11 +341,20 @@ export const sendCourseMeetLink = async (req) => {
           const results = await Promise.all(emailPromises);
           const successCount = results.filter(Boolean).length;
 
+          const counts = {
+               enrolledStudents: targetUsers.length,
+               trainers: parsedTrainers.length,
+               counselors: parsedCounselors.length,
+               extraStudents: parsedExtraStudents.length,
+               totalRecipients: recipients.length
+          };
+
           return NextResponse.json({
                success: true,
-               message: `Zoom meeting link successfully emailed to ${successCount} out of ${targetUsers.length} enrolled students.`,
+               message: `Zoom meeting link emailed to ${successCount} out of ${recipients.length} participants (${counts.enrolledStudents} enrolled students, ${counts.trainers} trainers, ${counts.counselors} counselors, ${counts.extraStudents} extra students).`,
                sentCount: successCount,
-               totalStudents: targetUsers.length
+               totalParticipants: recipients.length,
+               counts
           });
      } catch (error) {
           console.error("sendCourseMeetLink error:", error);
@@ -597,9 +738,16 @@ export const syncZoomRecordings = async (req) => {
           const recData = await recRes.json();
 
           if (recData.code || (recData.message && !recData.meetings)) {
+               const msg = recData.message || "";
+               let friendlyMsg = `Zoom API: ${msg}`;
+               if (msg.toLowerCase().includes("scope") || msg.toLowerCase().includes("does not contain")) {
+                    friendlyMsg = "Zoom Marketplace me 'Recording' Scope missing hai. Apne Zoom App me 'cloud_recording:read:list_user_recordings' add karein. (Note: Cloud Recording sirf Zoom Pro/Paid accounts me chalti hai).";
+               } else if (msg.toLowerCase().includes("not enabled")) {
+                    friendlyMsg = "Cloud Recording aapke Zoom account par enabled nahi hai. (Free Zoom accounts me sirf Local Recording hoti hai, Cloud Recording ke liye Zoom Pro chahiye).";
+               }
                return NextResponse.json({
                     success: false,
-                    message: `Zoom API Response: ${recData.message || "Cloud Recording feature is not enabled on this Zoom account. Free Zoom accounts only support local recordings."}`
+                    message: friendlyMsg
                }, { status: 400 });
           }
 

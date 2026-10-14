@@ -40,10 +40,12 @@ import * as leadController from "../controllers/leadController.js";
 import * as meetController from "../controllers/meetController.js";
 import { receiveJob, getJobs } from "../controllers/jobController.js";
 import whatsappRoutes from "./whatsappRoutes.js";
+import instagramRoutes from "./instagramRoutes.js";
 import crmLeadRoutes from "./crmLeadRoutes.js";
 import crmAuthRoutes from "./crmAuthRoutes.js";
 import erpRoutes from "./erpRoutes.js";
 import erpAuthRoutes from "./erpAuthRoutes.js";
+import omnichannelRoutes from "./omnichannelRoutes.js";
 
 import { v2 as cloudinary } from "cloudinary";
 import Courses from "../models/Courses.js";
@@ -293,6 +295,12 @@ router.get("/leads", requireAdminForWrites, makeExpressRoute(leadController.getL
 
 // 19. WhatsApp Automation Routes
 router.use(whatsappRoutes);
+
+// 20. Instagram Automation Routes
+router.use(instagramRoutes);
+
+// 21. Omnichannel Bot & Public Webhook Routes
+router.use(omnichannelRoutes);
 
 // 16. Cloudinary Signature
 router.get("/cloudinary-signature", (req, res) => {

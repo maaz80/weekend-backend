@@ -29,6 +29,20 @@ import {
   getBatchAttendanceHistory,
   getStudentAttendanceSummary
 } from "../controllers/erpAttendanceController.js";
+import {
+  getFaqRules,
+  createFaqRule,
+  updateFaqRule,
+  deleteFaqRule,
+  getConversations,
+  getConversationMessages,
+  sendReply,
+  toggleBot,
+  simulateInbound,
+  deleteConversation,
+  syncGmail,
+  getGmailStatus
+} from "../controllers/erpOmnichannelController.js";
 import erpAuthRoutes from "./erpAuthRoutes.js";
 
 const router = express.Router();
@@ -73,5 +87,21 @@ router.post("/attendance", saveAttendance);
 router.get("/attendance/by-date", getBatchAttendanceByDate);
 router.get("/attendance/history", getBatchAttendanceHistory);
 router.get("/students/:studentId/attendance", getStudentAttendanceSummary);
+
+// Omnichannel Q&A Auto-Responder Rules
+router.get("/faq-rules", getFaqRules);
+router.post("/faq-rules", createFaqRule);
+router.put("/faq-rules/:id", updateFaqRule);
+router.delete("/faq-rules/:id", deleteFaqRule);
+
+// Omnichannel Live Chat Inbox & Manual Counselor Replies
+router.get("/conversations", getConversations);
+router.get("/conversations/:id/messages", getConversationMessages);
+router.post("/conversations/:id/reply", sendReply);
+router.put("/conversations/:id/toggle-bot", toggleBot);
+router.delete("/conversations/:id", deleteConversation);
+router.post("/conversations/simulate-inbound", simulateInbound);
+router.post("/conversations/sync-gmail", syncGmail);
+router.get("/conversations/gmail-status", getGmailStatus);
 
 export default router;

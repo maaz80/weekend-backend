@@ -92,7 +92,12 @@ export function buildTriggerPlugin(schema) {
           "OTP", "User", "Auth", "Lead", "Booking", "otp", "user", "auth", "lead", "booking", "otps", "users", "leads", "bookings",
           "CrmLead", "crmlead", "crmleads", "WhatsAppLead", "whatsapplead", "whatsappleads",
           "ErpStudent", "erpstudent", "erpstudents", "ErpBatch", "erpbatch", "erpbatches",
-          "ErpPayment", "erppayment", "erppayments"
+          "ErpPayment", "erppayment", "erppayments", "ErpAttendance", "erpattendance",
+          "UnifiedMessage", "unifiedmessage", "unifiedmessages",
+          "UnifiedConversation", "unifiedconversation", "unifiedconversations",
+          "AutoFaqRule", "autofaqrule", "autofaqrules",
+          "InstagramMessage", "instagrammessage", "InstagramLead", "instagramlead",
+          "WhatsAppMessage", "whatsappmessage"
      ];
 
      const handleTrigger = (doc, rawModelName) => {

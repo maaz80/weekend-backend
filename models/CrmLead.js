@@ -123,8 +123,20 @@ const crmLeadSchema = new mongoose.Schema(
     },
     originalType: {
       type: String,
-      enum: ["lead", "whatsapp", "manual"],
+      enum: ["lead", "whatsapp", "instagram", "manual"],
       default: "manual"
+    },
+    instagramUsername: {
+      type: String,
+      default: "",
+      trim: true,
+      index: true
+    },
+    instagramScopedId: {
+      type: String,
+      default: "",
+      trim: true,
+      index: true
     },
     isDuplicate: {
       type: Boolean,
@@ -141,7 +153,8 @@ const crmLeadSchema = new mongoose.Schema(
   }
 );
 
-// Compound index for quick phone search and sorting by last activity
+// Compound index for quick phone/instagram search and sorting by last activity
 crmLeadSchema.index({ phone: 1, lastActivityAt: -1 });
+crmLeadSchema.index({ instagramScopedId: 1, lastActivityAt: -1 });
 
 export default mongoose.models.CrmLead || mongoose.model("CrmLead", crmLeadSchema);

@@ -1,6 +1,7 @@
 import CrmLead from "../models/CrmLead.js";
 import Lead from "../models/Lead.js";
 import WhatsAppLead from "../models/WhatsAppLead.js";
+import InstagramLead from "../models/InstagramLead.js";
 import connectDB from "../config/db.js";
 
 // Helper: Normalize 10-digit Indian phone
@@ -57,7 +58,8 @@ export const getLeads = async (req, res) => {
         { name: searchRegex },
         { phone: searchRegex },
         { email: searchRegex },
-        { course: searchRegex }
+        { course: searchRegex },
+        { instagramUsername: searchRegex }
       ];
     }
 
@@ -429,22 +431,27 @@ export const syncExistingLeads = async (req, res) => {
     await connectDB();
     const mongoose = (await import("mongoose")).default;
 
-    const [websiteLeads, whatsappLeads, existingCrm] = await Promise.all([
+    const [websiteLeads, whatsappLeads, instagramLeads, existingCrm] = await Promise.all([
       mongoose.connection.collection("leads").find().toArray(),
       mongoose.connection.collection("whatsappleads").find().toArray(),
-      CrmLead.find().select("phone email originalLeadId").lean()
+      mongoose.connection.collection("instagramleads").find().toArray(),
+      CrmLead.find().select("phone email originalLeadId instagramScopedId instagramUsername").lean()
     ]);
 
     // Build In-Memory Lookup Sets for lightning-fast (O(1)) duplicate checking
     const phoneSet = new Set();
     const emailSet = new Set();
     const origIdSet = new Set();
+    const igScopedSet = new Set();
+    const igUsernameSet = new Set();
 
     for (const c of existingCrm) {
       const p = cleanPhoneNumber(c.phone);
       if (p && p.length >= 10) phoneSet.add(p);
       if (c.email && c.email.includes("@")) emailSet.add(c.email.trim().toLowerCase());
       if (c.originalLeadId) origIdSet.add(String(c.originalLeadId));
+      if (c.instagramScopedId) igScopedSet.add(String(c.instagramScopedId));
+      if (c.instagramUsername) igUsernameSet.add(c.instagramUsername.toLowerCase());
     }
 
     const { calculateLeadScoreAndTags, getDefaultFollowUp } = await import("../services/leadService.js");
@@ -613,7 +620,94 @@ export const syncExistingLeads = async (req, res) => {
       importedCount++;
     }
 
-    // 3. Batch insert new leads in a single query
+    // 3. Process Instagram Leads
+    for (const igl of (instagramLeads || [])) {
+      const scopedId = String(igl.instagram_scoped_id || "").trim();
+      const origIdStr = String(igl._id);
+      const igUser = igl.username && igl.username !== "Instagram User" ? igl.username.toLowerCase() : "";
+      const cleanPhone = cleanPhoneNumber(igl.phone);
+
+      const isMatch =
+        (scopedId && igScopedSet.has(scopedId)) ||
+        (igUser && igUsernameSet.has(igUser)) ||
+        (cleanPhone && cleanPhone.length >= 10 && phoneSet.has(cleanPhone)) ||
+        origIdSet.has(origIdStr);
+
+      if (isMatch) {
+        existingCount++;
+        continue;
+      }
+
+      const igUsername = igl.username && igl.username !== "Instagram User" ? igl.username : "";
+      const leadName = (igl.name && igl.name !== "Instagram Visitor" && igl.name !== "Instagram User")
+        ? igl.name
+        : (igUsername ? `@${igUsername}` : "Instagram Visitor");
+
+      const courseName = igl.service_interest && igl.service_interest !== "Not Specified"
+        ? igl.service_interest
+        : "UI/UX Design Course";
+
+      const answersSummary = [
+        igUsername ? `IG: @${igUsername}` : "",
+        igl.current_step ? `Step: ${igl.current_step}` : "",
+        igl.notes ? `Inquiry: ${igl.notes}` : ""
+      ].filter(Boolean).join(" | ");
+
+      const { score, priority, tags } = calculateLeadScoreAndTags({
+        name: leadName,
+        phone: cleanPhone,
+        email: igl.email || "",
+        course: courseName,
+        answersSummary,
+        source: "Instagram DM",
+        status: igl.status
+      });
+
+      const { date: defaultDate, time: defaultTime } = getDefaultFollowUp();
+
+      leadsToInsert.push({
+        name: leadName,
+        phone: cleanPhone || "Not Provided",
+        email: igl.email || "",
+        course: courseName,
+        source: "Instagram DM",
+        status: igl.status === "demo_requested" ? "Demo Scheduled" : "Pending",
+        priority: igl.status === "demo_requested" ? "Hot" : priority,
+        leadScore: score,
+        autoTags: tags,
+        followUpDate: defaultDate,
+        followUpTime: defaultTime,
+        followUpNote: "Instagram DM inquiry - follow up with student",
+        answers: {
+          instagram_scoped_id: scopedId,
+          instagram_username: igUsername,
+          current_step: igl.current_step,
+          profile_pic: igl.profile_pic
+        },
+        answersSummary,
+        originalLeadId: origIdStr,
+        originalType: "instagram",
+        instagramUsername: igUsername,
+        instagramScopedId: scopedId,
+        notes: [
+          {
+            author: "CRM Fast-Sync",
+            text: `[Database Sync]: Ingested from Instagram DM. Score: ${score}/100.`,
+            createdAt: new Date()
+          }
+        ],
+        createdAt: igl.createdAt || new Date(),
+        lastActivityAt: igl.last_message_at || igl.updatedAt || new Date()
+      });
+
+      if (scopedId) igScopedSet.add(scopedId);
+      if (igUser) igUsernameSet.add(igUser);
+      if (cleanPhone && cleanPhone.length >= 10) phoneSet.add(cleanPhone);
+      origIdSet.add(origIdStr);
+      importedCount++;
+    }
+
+    // 4. Batch insert new leads in a single query
     if (leadsToInsert.length > 0) {
       await CrmLead.insertMany(leadsToInsert);
     }
@@ -645,6 +739,8 @@ export const deleteLead = async (req, res) => {
     if (lead.originalLeadId) {
       if (lead.originalType === "whatsapp") {
         await WhatsAppLead.findByIdAndDelete(lead.originalLeadId);
+      } else if (lead.originalType === "instagram") {
+        await InstagramLead.findByIdAndDelete(lead.originalLeadId);
       } else {
         await Lead.findByIdAndDelete(lead.originalLeadId);
       }

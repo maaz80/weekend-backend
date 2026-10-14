@@ -39,6 +39,8 @@ export function calculateLeadScoreAndTags({ name, phone, email, course, answersS
 
   if (source && source.toLowerCase().includes("whatsapp")) {
     tags.push("WhatsApp Lead");
+  } else if (source && source.toLowerCase().includes("instagram")) {
+    tags.push("Instagram Lead");
   } else if (source && source.toLowerCase().includes("popup")) {
     tags.push("Website Popup");
   } else if (source && source.toLowerCase().includes("brochure")) {
@@ -307,3 +309,142 @@ export async function syncWhatsAppLeadToCrm(wal) {
     return null;
   }
 }
+
+/**
+ * Direct Instagram to CRM Upsert
+ */
+export async function syncInstagramLeadToCrm(igl) {
+  if (!igl) return null;
+  try {
+    await connectDB();
+    const scopedId = String(igl.instagram_scoped_id || "").trim();
+    if (!scopedId) return null;
+
+    const cleanPhone = cleanPhoneNumber(igl.phone);
+    const igUsername = igl.username && igl.username !== "Instagram User" ? igl.username : "";
+    const leadName = (igl.name && igl.name !== "Instagram Visitor" && igl.name !== "Instagram User")
+      ? igl.name
+      : (igUsername ? `@${igUsername}` : "Instagram Visitor");
+
+    const courseName = igl.service_interest && igl.service_interest !== "Not Specified"
+      ? igl.service_interest
+      : "UI/UX Design Course";
+
+    const answersSummary = [
+      igUsername ? `IG: @${igUsername}` : "",
+      igl.current_step ? `Step: ${igl.current_step}` : "",
+      igl.status ? `Status: ${igl.status}` : "",
+      igl.notes ? `Note: ${igl.notes}` : ""
+    ].filter(Boolean).join(" | ");
+
+    const { score, priority, tags } = calculateLeadScoreAndTags({
+      name: leadName,
+      phone: cleanPhone,
+      email: igl.email || "",
+      course: courseName,
+      answersSummary,
+      source: "Instagram DM",
+      status: igl.status
+    });
+
+    // Check if CRM lead exists by instagramScopedId, username, or phone
+    const searchConditions = [{ instagramScopedId: scopedId }];
+    if (igUsername) {
+      searchConditions.push({ instagramUsername: igUsername });
+    }
+    if (cleanPhone && cleanPhone.length >= 10) {
+      searchConditions.push({ phone: cleanPhone });
+    }
+
+    let crmLead = await CrmLead.findOne({ $or: searchConditions });
+
+    if (!crmLead) {
+      const { date: defaultDate, time: defaultTime } = getDefaultFollowUp();
+      crmLead = await CrmLead.create({
+        name: leadName,
+        phone: cleanPhone || "Not Provided",
+        email: igl.email || "",
+        course: courseName,
+        source: "Instagram DM",
+        status: igl.status === "demo_requested" ? "Demo Scheduled" : "Pending",
+        priority: igl.status === "demo_requested" ? "Hot" : priority,
+        leadScore: score,
+        autoTags: tags,
+        followUpDate: defaultDate,
+        followUpTime: defaultTime,
+        followUpNote: "Instagram DM inquiry - follow up with student",
+        answers: {
+          instagram_scoped_id: scopedId,
+          instagram_username: igUsername,
+          current_step: igl.current_step,
+          profile_pic: igl.profile_pic
+        },
+        answersSummary,
+        originalLeadId: String(igl._id),
+        originalType: "instagram",
+        instagramUsername: igUsername,
+        instagramScopedId: scopedId,
+        notes: [
+          {
+            author: "Instagram Bot",
+            text: `[Instagram Lead Captured]: Status: ${igl.status || "new"}. Step: ${igl.current_step || "START"}. Score: ${score}/100.`,
+            createdAt: new Date()
+          }
+        ],
+        createdAt: igl.createdAt || new Date(),
+        lastActivityAt: igl.last_message_at || igl.updatedAt || new Date()
+      });
+      console.log(`📸 [Instagram->CRM] Ingested new lead: ${leadName} (@${igUsername})`);
+    } else {
+      let changed = false;
+      if (leadName !== "Instagram Visitor" && crmLead.name !== leadName && !crmLead.name.includes(leadName)) {
+        crmLead.name = leadName;
+        changed = true;
+      }
+      if (igUsername && !crmLead.instagramUsername) {
+        crmLead.instagramUsername = igUsername;
+        changed = true;
+      }
+      if (!crmLead.instagramScopedId) {
+        crmLead.instagramScopedId = scopedId;
+        changed = true;
+      }
+      if (cleanPhone && (!crmLead.phone || crmLead.phone === "Not Provided")) {
+        crmLead.phone = cleanPhone;
+        changed = true;
+      }
+      if (igl.status === "demo_requested" && crmLead.status === "Pending") {
+        crmLead.status = "Demo Scheduled";
+        crmLead.priority = "Hot";
+        changed = true;
+      }
+      if (answersSummary && crmLead.answersSummary !== answersSummary) {
+        crmLead.answersSummary = answersSummary;
+        crmLead.answers = {
+          ...crmLead.answers,
+          instagram_scoped_id: scopedId,
+          instagram_username: igUsername,
+          current_step: igl.current_step
+        };
+        crmLead.leadScore = Math.max(score, crmLead.leadScore || 0);
+        crmLead.autoTags = Array.from(new Set([...(crmLead.autoTags || []), ...tags]));
+        crmLead.lastActivityAt = new Date();
+        crmLead.notes.push({
+          author: "Instagram Bot",
+          text: `[Instagram Bot Update]: Step: ${igl.current_step}, Status: ${igl.status}`,
+          createdAt: new Date()
+        });
+        changed = true;
+      }
+      if (changed) {
+        await crmLead.save();
+        console.log(`📸 [Instagram->CRM] Updated lead: ${leadName} (@${igUsername})`);
+      }
+    }
+    return crmLead;
+  } catch (err) {
+    console.error("❌ [syncInstagramLeadToCrm Error]:", err.message);
+    return null;
+  }
+}
+

@@ -189,6 +189,9 @@ const coursesSchema = new mongoose.Schema({
                scheduledAt: String,
                instructions: String,
                active: Boolean,
+               trainerEmails: [String],
+               counselorEmails: [String],
+               extraStudentEmails: [String],
                updatedAt: Date
           },
           recordings: [{

@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import connectDB from "./config/db.js";
 import apiRouter from "./routes/api.js";
+import { startGmailListener } from "./services/gmailListenerService.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -153,5 +154,14 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
      console.log(`Server is running on port ${PORT}`);
      console.log(`API Base URL: http://localhost:${PORT}/api`);
+
+     // Initialize Gmail Auto-Responder & Inbound Worker
+     if (process.env.GMAIL_AUTO_LISTEN !== "false") {
+          try {
+               startGmailListener(30000);
+          } catch (err) {
+               console.warn("⚠️ Failed to start Gmail Listener:", err.message);
+          }
+     }
 });
 

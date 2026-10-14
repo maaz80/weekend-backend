@@ -11,8 +11,13 @@ import {
   syncExistingLeads,
   deleteLead
 } from "../controllers/crmLeadController.js";
+import { getCrmPermissions, updateCrmPermissions } from "../controllers/crmAuthController.js";
 
 const router = express.Router();
+
+// CRM Permissions routes
+router.get("/permissions", getCrmPermissions);
+router.put("/permissions", updateCrmPermissions);
 
 // Lead Analytics & Sync routes
 router.get("/analytics", getAnalytics);
