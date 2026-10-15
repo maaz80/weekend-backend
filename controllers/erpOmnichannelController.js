@@ -7,49 +7,240 @@ import { checkNewEmails, getGmailListenerStatus } from "../services/gmailListene
 // Default Seed FAQ Rules for Weekend UX
 const DEFAULT_FAQ_RULES = [
   {
-    question: "Free Demo Class / Trial Session",
-    keywords: ["demo", "trial", "free session", "class trial", "sample class"],
+    question: "Single Student Portfolio with Details & Name",
+    keywords: [
+      "portfolio",
+      "student portfolio",
+      "student work",
+      "sample work",
+      "projects",
+      "past projects",
+      "case study",
+      "student name",
+      "behance",
+      "dribbble"
+    ],
     matchType: "contains",
-    answer: "Awesome! 🎯 You're invited to our upcoming Live Interactive Mentorship Session with Senior Product Designers.\n\n👉 Register your free demo seat here:\nhttps://weekendux.in/demo\n\nOur admissions counselor will also assist you with your schedule. If you have questions, reply 'COUNSELOR' or share your phone number!",
+    answer: "You can explore real student portfolios along with complete project details and the student's name on our official website. All portfolios are built with live industry case studies under 1-on-1 mentor guidance.\n\n🌐 View Student Portfolios: https://weekendux.in/portfolio",
     channels: ["instagram", "facebook", "email"],
     isActive: true,
-    triggeredCount: 142
+    triggeredCount: 0
   },
   {
-    question: "Curriculum & Course Syllabus",
-    keywords: ["syllabus", "brochure", "curriculum", "course details", "content", "what will i learn"],
+    question: "Video Portfolios Uploaded on Website & App",
+    keywords: [
+      "video portfolio",
+      "video projects",
+      "student video",
+      "app portfolio",
+      "video walkthrough",
+      "video review",
+      "prototype video",
+      "app video"
+    ],
     matchType: "contains",
-    answer: "Here is the complete UI/UX curriculum overview! 📘\n\nOur industry-standard programs include:\n• UI/UX Design & Design Thinking\n• Figma Mastery & Design Systems\n• Generative AI Tools for Modern Designers\n• 1-on-1 Portfolio Reviews & Placement Assistance\n\n📥 Download Syllabus PDF:\nhttps://weekendux.in/brochure.pdf",
+    answer: "Yes! Complete video walkthroughs and project presentations by our students are uploaded directly on both the Weekend UX Website and Mobile App.\n\n📱 Download the Weekend UX App or visit https://weekendux.in to watch live student video portfolios & walkthroughs.",
     channels: ["instagram", "facebook", "email"],
     isActive: true,
-    triggeredCount: 98
+    triggeredCount: 0
   },
   {
-    question: "Course Fees, EMI & Discount Offers",
-    keywords: ["fee", "fees", "cost", "price", "emi", "discount", "kitna lagega"],
+    question: "Software & Design Tools Trained by Mentors",
+    keywords: [
+      "software",
+      "tools",
+      "figma",
+      "photoshop",
+      "illustrator",
+      "indesign",
+      "canva",
+      "tools taught",
+      "software training",
+      "which software",
+      "graphic tools",
+      "ui tools"
+    ],
     matchType: "contains",
-    answer: "The UI/UX Masterclass fee is ₹45,000 (inclusive of live mentorship, portfolio review, and placement support).\n\n💳 Flexible No-Cost EMI options starting at ₹3,750/month are available.\n\nWould you like our counselor to call you with early-bird scholarship details? Reply with your Phone Number!",
+    answer: "Our industry expert mentors provide practical, hands-on training on all industry-standard software across our programs:\n\n• UI/UX Design: Figma, FigJam, Prototyping tools & Generative AI workflows\n• Graphic Design: Adobe Photoshop, Adobe Illustrator, InDesign & Canva\n\nAll tools are trained with real-world assignments and design systems.",
     channels: ["instagram", "facebook", "email"],
     isActive: true,
-    triggeredCount: 184
+    triggeredCount: 0
   },
   {
-    question: "Batch Timings & Weekend Schedule",
-    keywords: ["timing", "schedule", "batch", "weekend", "time", "kab start hoga"],
+    question: "Mode of Classes (Online Only - Offline Not Available Currently)",
+    keywords: [
+      "offline",
+      "offline classes",
+      "classroom",
+      "centre",
+      "center",
+      "location",
+      "in person",
+      "offline batch",
+      "physical class",
+      "face to face"
+    ],
     matchType: "contains",
-    answer: "Our upcoming batches are specifically scheduled for working professionals and college students:\n\n🗓️ Weekend Cohort: Saturday & Sunday (11:00 AM – 1:30 PM IST)\n🗓️ Weekday Fastrack: Tuesday & Thursday (7:30 PM – 9:30 PM IST)\n\nAll live sessions are recorded and uploaded to your student LMS dashboard.",
-    channels: ["instagram", "facebook"],
-    isActive: true,
-    triggeredCount: 65
-  },
-  {
-    question: "Placement Assistance & Job Support",
-    keywords: ["placement", "job", "guarantee", "career support", "hiring", "package"],
-    matchType: "contains",
-    answer: "Yes! 💼 Weekend UX offers 100% placement support with dedicated mock interviews, resume critiques, Behance/Dribbble portfolio curation, and direct hiring partner referrals.\n\nOver 800+ alumni have transitioned into leading product companies and design studios.",
+    answer: "Currently, offline classes are not available. We conduct high-engagement, LIVE Interactive Online classes with direct screen sharing, live doubts clearing, and 1-on-1 mentor support. 💻\n\nWhenever offline classes become available, we will announce updates to all students.",
     channels: ["instagram", "facebook", "email"],
     isActive: true,
-    triggeredCount: 112
+    triggeredCount: 0
+  },
+  {
+    question: "EMI Option & Registration Fee Policy (10k Initial Payment)",
+    keywords: [
+      "emi",
+      "installment",
+      "monthly payment",
+      "registration charges",
+      "10k",
+      "10000",
+      "part payment",
+      "split payment",
+      "emi option",
+      "down payment"
+    ],
+    matchType: "contains",
+    answer: "Yes, an EMI option is available for our courses! 💳\n\nEMI Guidelines:\n1. A one-time initial registration payment of ₹10,000 is required to secure your seat.\n2. Once registered, your customized monthly EMI schedule will be activated after discussion with the Weekend UX team.\n\nReply with your Phone Number to discuss your flexible EMI plan with our admissions counselor!",
+    channels: ["instagram", "facebook", "email"],
+    isActive: true,
+    triggeredCount: 0
+  },
+  {
+    question: "Course Duration & Batches (Weekend vs Weekday Schedules)",
+    keywords: [
+      "duration",
+      "timing",
+      "timings",
+      "schedule",
+      "batch",
+      "weekend batch",
+      "weekday batch",
+      "batch timings",
+      "how long",
+      "kitne time",
+      "kab start hoga"
+    ],
+    matchType: "contains",
+    answer: "We offer flexible cohort schedules designed for working professionals and college students:\n\n🗓️ Weekend Cohort: Saturday & Sunday live interactive sessions\n🗓️ Weekday Cohort: Regular weekday evening batches\n\nCourse duration typically ranges from 3 to 6 months depending on your program. All live sessions are recorded and accessible anytime on your LMS dashboard.",
+    channels: ["instagram", "facebook", "email"],
+    isActive: true,
+    triggeredCount: 0
+  },
+  {
+    question: "Fast-Track Accelerated Course Option",
+    keywords: [
+      "fast track",
+      "fasttrack",
+      "crash course",
+      "express batch",
+      "speed course",
+      "quick course",
+      "jaldi",
+      "accelerated"
+    ],
+    matchType: "contains",
+    answer: "Yes! ⚡ Fast-track accelerated course options are available across all our courses for students and working professionals looking for rapid upskilling.\n\nPlease connect with the Weekend UX team to discuss your target completion timeline and enroll in an upcoming fast-track cohort.",
+    channels: ["instagram", "facebook", "email"],
+    isActive: true,
+    triggeredCount: 0
+  },
+  {
+    question: "Job Placement & Career Support (Skill-Dependent Policy)",
+    keywords: [
+      "placement",
+      "job",
+      "job guarantee",
+      "career",
+      "hiring",
+      "interview",
+      "package",
+      "placement support",
+      "job assistance",
+      "job placement"
+    ],
+    matchType: "contains",
+    answer: "Job placement ultimately depends on your individual skills, dedication, and knowledge. 💼\n\nWeekend UX provides end-to-end career guidance:\n• Direct interview connections with hiring partner companies\n• 1-on-1 Portfolio review and curation\n• Professional Resume preparation guidance\n• Mock interviews & crack-the-interview training to help you tackle design challenges.",
+    channels: ["instagram", "facebook", "email"],
+    isActive: true,
+    triggeredCount: 0
+  },
+  {
+    question: "Fee Refund Policy (Strictly Non-Refundable)",
+    keywords: [
+      "refund",
+      "money back",
+      "cancellation",
+      "cancel",
+      "refundable",
+      "return fee",
+      "paise wapas",
+      "refund policy"
+    ],
+    matchType: "contains",
+    answer: "Please note that course fees and registration payments are strictly Non-Refundable in any case. ⚠️\n\nWe request all prospective students to check the course brochure and clarify all questions with the Weekend UX team prior to making any payment.",
+    channels: ["instagram", "facebook", "email"],
+    isActive: true,
+    triggeredCount: 0
+  },
+  {
+    question: "Help & Support - Weekend UX Genie Chatbot",
+    keywords: [
+      "support",
+      "help",
+      "genie",
+      "chatbot",
+      "contact",
+      "customer care",
+      "helpdesk",
+      "assistance",
+      "help and support"
+    ],
+    matchType: "contains",
+    answer: "For all help, admissions guidance, and student support, you can connect directly with our 'Weekend UX Genie Chatbot' available 24/7 on our official website: https://weekendux.in 🤖\n\nOur team is also active on email and chat to resolve your queries.",
+    channels: ["instagram", "facebook", "email"],
+    isActive: true,
+    triggeredCount: 0
+  },
+  {
+    question: "Course Fee Discounts (75% to 90% Off)",
+    keywords: [
+      "discount",
+      "offer",
+      "discount offer",
+      "75%",
+      "90%",
+      "coupon",
+      "concession",
+      "fees discount",
+      "kitna discount",
+      "special offer"
+    ],
+    matchType: "contains",
+    answer: "All our courses currently have attractive 75% to 90% discounts available, depending on the specific course and cohort! 🏷️\n\nPlease consult with the Weekend UX admissions team to check the exact discount applicable to your selected course.",
+    channels: ["instagram", "facebook", "email"],
+    isActive: true,
+    triggeredCount: 0
+  },
+  {
+    question: "Merit Scholarships (5 Students/Year - 95% in Proctored MCQ Exam)",
+    keywords: [
+      "scholarship",
+      "free seat",
+      "scholarships",
+      "merit scholarship",
+      "95%",
+      "mcq",
+      "proctored",
+      "scholarship exam",
+      "test",
+      "proctored test"
+    ],
+    matchType: "contains",
+    answer: "Weekend UX offers Merit Scholarships for up to 5 students per year! 🎓\n\nEligibility Criteria:\n• Candidates must score 95% or higher in our official proctored online MCQ assessment exam.\n\nReply with 'SCHOLARSHIP' or contact the Weekend UX team to apply and book your proctored test slot.",
+    channels: ["instagram", "facebook", "email"],
+    isActive: true,
+    triggeredCount: 0
   }
 ];
 

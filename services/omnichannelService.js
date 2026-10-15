@@ -36,6 +36,9 @@ export async function matchFaqRule(incomingText, channel = "instagram") {
     channels: channel
   }).lean();
 
+  let bestMatch = null;
+  let bestMatchScore = 0;
+
   for (const rule of activeRules) {
     // Check keywords
     if (Array.isArray(rule.keywords) && rule.keywords.length > 0) {
@@ -45,19 +48,28 @@ export async function matchFaqRule(incomingText, channel = "instagram") {
         if (rule.matchType === "exact") {
           if (normalized === cleanKw) return rule;
         } else {
-          // 'contains' or default
-          if (normalized.includes(cleanKw)) return rule;
+          // 'contains' or default: select most specific match
+          if (normalized.includes(cleanKw)) {
+            if (cleanKw.length > bestMatchScore) {
+              bestMatch = rule;
+              bestMatchScore = cleanKw.length;
+            }
+          }
         }
       }
     }
 
     // Fallback: Check question title similarity
     if (rule.question && normalized.includes(rule.question.toLowerCase().trim())) {
-      return rule;
+      const qLen = rule.question.length;
+      if (qLen > bestMatchScore) {
+        bestMatch = rule;
+        bestMatchScore = qLen;
+      }
     }
   }
 
-  return null;
+  return bestMatch;
 }
 
 /**
