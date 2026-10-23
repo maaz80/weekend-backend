@@ -42,7 +42,8 @@ const homeSchema = new mongoose.Schema({
                type: [{
                     value: String,
                     valueName: String,
-                    description: String
+                    description: String,
+                    icon: { type: String, default: "" }
                }],
                default: []
           }

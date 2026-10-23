@@ -1,5 +1,6 @@
 import CrmLead from "../models/CrmLead.js";
 import connectDB from "../config/db.js";
+import { syncLeadToGoogleSheet } from "./sheetService.js";
 
 // Helper: Normalize 10-digit Indian phone
 export const cleanPhoneNumber = (phone) => {
@@ -130,8 +131,14 @@ export async function ingestUnifiedLead({
   }
 
   if (existingLead) {
-    // Lead already exists - Update activity and append timeline note
+    // Lead already exists - Update activity, name, source and append timeline note
     existingLead.lastActivityAt = new Date();
+    if (leadName && leadName !== "Chatbot Visitor" && leadName !== "Website Visitor" && leadName !== "Lead") {
+      existingLead.name = leadName;
+    }
+    if (source) {
+      existingLead.source = source;
+    }
     if (courseName && courseName !== "General Inquiry") {
       existingLead.course = courseName;
     }
@@ -155,6 +162,19 @@ export async function ingestUnifiedLead({
 
     await existingLead.save();
     console.log(`⚡ [LeadService] Updated existing CRM lead: ${existingLead.name} (${existingLead.phone})`);
+
+    // Sync to Google Sheet asynchronously
+    syncLeadToGoogleSheet({
+      name: existingLead.name,
+      phone: existingLead.phone,
+      email: existingLead.email || trimmedEmail || "Not provided",
+      source: existingLead.source || source,
+      course: existingLead.course || courseName,
+      answers: formattedSummary || existingLead.answersSummary || "",
+      status: existingLead.status || "Pending",
+      remark: `Re-Inquiry via ${source}`
+    });
+
     return { lead: existingLead, isNew: false };
   }
 
@@ -188,6 +208,18 @@ export async function ingestUnifiedLead({
   });
 
   console.log(`✅ [LeadService] Created new unified CRM lead: ${newLead.name} (${newLead.phone}) - Source: ${source}`);
+
+  // Sync to Google Sheet asynchronously
+  syncLeadToGoogleSheet({
+    name: newLead.name,
+    phone: newLead.phone,
+    email: newLead.email || "Not provided",
+    source: newLead.source || source,
+    course: newLead.course || courseName,
+    answers: formattedSummary || "",
+    status: "Pending"
+  });
+
   return { lead: newLead, isNew: true };
 }
 

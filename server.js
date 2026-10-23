@@ -66,7 +66,7 @@ const isAllowedDomain = (origin) => {
      if (allowedOrigins.includes(origin)) return true;
      try {
           const host = new URL(origin).hostname;
-          if (host === "localhost" || host === "127.0.0.1" || host.endsWith("weekendux.in") || host.endsWith("vercel.app") || host.endsWith("onrender.com") || host.endsWith("netlify.app")) {
+          if (host === "localhost" || host === "127.0.0.1" || host === "weekendux.in" || host.endsWith(".weekendux.in") || host.endsWith("vercel.app") || host.endsWith("onrender.com") || host.endsWith("netlify.app")) {
                return true;
           }
      } catch {
