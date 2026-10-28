@@ -155,8 +155,8 @@ app.listen(PORT, () => {
      console.log(`Server is running on port ${PORT}`);
      console.log(`API Base URL: http://localhost:${PORT}/api`);
 
-     // Initialize Gmail Auto-Responder & Inbound Worker
-     if (process.env.GMAIL_AUTO_LISTEN !== "false") {
+     // Enable Gmail automation only when explicitly requested.
+     if (process.env.GMAIL_AUTO_LISTEN === "true") {
           try {
                startGmailListener(30000);
           } catch (err) {
@@ -164,4 +164,3 @@ app.listen(PORT, () => {
           }
      }
 });
-

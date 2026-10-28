@@ -24,11 +24,14 @@ import * as authController from "../controllers/authController.js";
 import * as blogController from "../controllers/blogController.js";
 import * as bookingController from "../controllers/bookingController.js";
 import * as contactController from "../controllers/contactController.js";
+import * as corporateTrainingController from "../controllers/corporateTrainingController.js";
 import * as coursesController from "../controllers/coursesController.js";
 import * as disclaimerController from "../controllers/disclaimerController.js";
 import * as faqController from "../controllers/faqController.js";
+import * as freeResourcesController from "../controllers/freeResourcesController.js";
 import * as footerController from "../controllers/footerController.js";
 import * as homeController from "../controllers/homeController.js";
+import * as hireFromUsController from "../controllers/hireFromUsController.js";
 import * as locationController from "../controllers/locationController.js";
 import * as navbarController from "../controllers/navbarController.js";
 import * as otpController from "../controllers/otpController.js";
@@ -165,6 +168,12 @@ router.get("/deploy-check", (req, res) => {
 // 1. About
 router.get("/about", makeExpressRoute(aboutController.getAbout));
 router.put("/about", requireAdminForWrites, upload.any(), makeExpressRoute(aboutController.updateAbout));
+router.get("/hire-from-us", makeExpressRoute(hireFromUsController.getHireFromUs));
+router.put("/hire-from-us", requireAdminForWrites, makeExpressRoute(hireFromUsController.updateHireFromUs));
+router.get("/free-resources", makeExpressRoute(freeResourcesController.getFreeResources));
+router.put("/free-resources", requireAdminForWrites, upload.any(), makeExpressRoute(freeResourcesController.updateFreeResources));
+router.get("/corporate-training", makeExpressRoute(corporateTrainingController.getCorporateTraining));
+router.put("/corporate-training", requireAdminForWrites, upload.any(), makeExpressRoute(corporateTrainingController.updateCorporateTraining));
 
 // 2. Admin
 router.post("/admin/login", authLimiter, makeExpressRoute(adminController.loginAdmin));

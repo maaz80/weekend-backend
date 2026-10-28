@@ -126,6 +126,15 @@ function createImapClient() {
  * Core function: Check for new unseen customer emails from Gmail and auto-reply
  */
 export async function checkNewEmails({ sinceHours = 48, maxEmails = 15 } = {}) {
+  if (process.env.GMAIL_AUTO_LISTEN !== "true") {
+    lastCheckResult = {
+      status: "disabled",
+      processedCount: 0,
+      message: "Gmail automation is disabled. Set GMAIL_AUTO_LISTEN=true to enable it."
+    };
+    return lastCheckResult;
+  }
+
   if (isChecking) {
     return { status: "already_running", processedCount: 0 };
   }
