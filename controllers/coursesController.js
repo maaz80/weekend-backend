@@ -247,6 +247,11 @@ export const updateCourses = async (req) => {
                               console.log(`Course image uploaded successfully: ${updateData.course[i].image}`);
                          }
 
+                         const certificationImageFile = formData.get(`course_${i}_certificationImage`);
+                         if (certificationImageFile && typeof certificationImageFile === "object" && typeof certificationImageFile.arrayBuffer === "function") {
+                              updateData.course[i].certificationImage = await uploadToCloudinary(certificationImageFile, "courses/certifications");
+                         }
+
                          // Case studies images
                          if (updateData.course[i].caseStudies && Array.isArray(updateData.course[i].caseStudies.items)) {
                               for (let j = 0; j < updateData.course[i].caseStudies.items.length; j++) {

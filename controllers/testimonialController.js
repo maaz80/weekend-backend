@@ -22,9 +22,13 @@ export const createTestimonial = async (req) => {
           const formData = await req.formData();
           const quote = formData.get("quote");
           const name = formData.get("name");
+          const avatarFile = formData.get("avatar");
           const testimonial = new Testimonial({
                quote,
-               name
+               name,
+               avatar: avatarFile && typeof avatarFile === "object" && typeof avatarFile.arrayBuffer === "function"
+                    ? await uploadToCloudinary(avatarFile, "testimonials")
+                    : ""
           });
 
           await testimonial.save();
@@ -45,12 +49,22 @@ export const updateTestimonial = async (req, { params }) => {
                quote: formData.get("quote"),
                name: formData.get("name")
           };
+          const avatarFile = formData.get("avatar");
+          if (avatarFile && typeof avatarFile === "object" && typeof avatarFile.arrayBuffer === "function") {
+               updateData.avatar = await uploadToCloudinary(avatarFile, "testimonials");
+          } else if (formData.get("removeAvatar") === "true") {
+               updateData.avatar = "";
+          }
 
           const testimonial = await Testimonial.findByIdAndUpdate(
                id,
                updateData,
                { new: true }
           );
+
+          if (!testimonial) {
+               return NextResponse.json({ error: "Testimonial not found" }, { status: 404 });
+          }
 
           await triggerFrontendBuild();
           return NextResponse.json(testimonial);

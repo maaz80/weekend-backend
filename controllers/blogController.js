@@ -85,6 +85,18 @@ export const updateBlogPage = async (req) => {
                          }
                     }
                }
+               if (updateData.authorTemplates && Array.isArray(updateData.authorTemplates)) {
+                    for (let i = 0; i < updateData.authorTemplates.length; i++) {
+                         const avatarFile = formData.get(`templateAvatar_${i}`);
+                         if (avatarFile) {
+                              const avatarUrl = await uploadToCloudinary(avatarFile, "blog-authors");
+                              if (!avatarUrl) {
+                                   throw new Error(`Author image upload failed for template ${i + 1}: Cloudinary returned no image URL.`);
+                              }
+                              updateData.authorTemplates[i].avatar = avatarUrl;
+                         }
+                    }
+               }
           } else {
                updateData = await req.json();
                if (updateData.blogs && Array.isArray(updateData.blogs)) {
@@ -105,7 +117,10 @@ export const updateBlogPage = async (req) => {
 
           if (updateData.hero !== undefined) blogPage.hero = updateData.hero;
           if (updateData.featuredblogs !== undefined) blogPage.featuredblogs = updateData.featuredblogs;
-          if (updateData.authorTemplates !== undefined) blogPage.authorTemplates = updateData.authorTemplates;
+          if (updateData.authorTemplates !== undefined) {
+               blogPage.authorTemplates = updateData.authorTemplates;
+               blogPage.markModified("authorTemplates");
+          }
           if (updateData.blogs !== undefined) blogPage.blogs = updateData.blogs;
 
           await blogPage.save();
@@ -166,6 +181,14 @@ export const createBlog = async (req) => {
           // Author is sent as serialized JSON object
           const authorStr = formData.get("author");
           const author = authorStr ? JSON.parse(authorStr) : {};
+          const authorAvatarFile = formData.get("authorAvatar");
+          if (authorAvatarFile) {
+               const avatarUrl = await uploadToCloudinary(authorAvatarFile, "blog-authors");
+               if (!avatarUrl) {
+                    throw new Error("Author avatar upload failed: Cloudinary returned no image URL.");
+               }
+               author.avatar = avatarUrl;
+          }
           
           const imageFile = formData.get("image");
           let imageUrl = "";
@@ -175,8 +198,6 @@ export const createBlog = async (req) => {
 
           const options = { month: 'short', day: 'numeric', year: 'numeric' };
           author.updatedDate = `Updated ${new Date().toLocaleDateString('en-US', options)}`;
-          delete author.avatar; // ensure no custom avatar is saved
-
           // Slug generation
           const customSlug = formData.get("slug");
           const baseSlug = customSlug ? createSlug(customSlug) : createSlug(title);
@@ -277,7 +298,19 @@ export const updateBlog = async (req, { params }) => {
           const authorStr = formData.get("author");
           if (authorStr) {
                const author = JSON.parse(authorStr);
-               existingBlog.author = { ...existingBlog.author?.toObject?.() || existingBlog.author || {}, ...author };
+               const existingAuthor = existingBlog.author?.toObject?.() || existingBlog.author || {};
+               existingBlog.author = { ...existingAuthor, ...author };
+          }
+          const authorAvatarFile = formData.get("authorAvatar");
+          if (authorAvatarFile) {
+               const avatarUrl = await uploadToCloudinary(authorAvatarFile, "blog-authors");
+               if (!avatarUrl) {
+                    throw new Error("Author avatar upload failed: Cloudinary returned no image URL.");
+               }
+               existingBlog.author = {
+                    ...(existingBlog.author?.toObject?.() || existingBlog.author || {}),
+                    avatar: avatarUrl
+               };
           }
 
           // Automatically set/update the updatedDate to current date (e.g. Jul 30, 2026)
@@ -324,6 +357,7 @@ export const updateBlog = async (req, { params }) => {
 
           // Mark nested array path as modified
           blogPage.markModified('blogs');
+          blogPage.markModified(`blogs.${blogIndex}.author`);
           await blogPage.save();
 
           await triggerFrontendBuild("Blog", blogPage.blogs[blogIndex]?._id);

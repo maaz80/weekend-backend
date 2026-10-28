@@ -16,6 +16,7 @@ const blogSchema = new mongoose.Schema({
           name: String,
           designation: String,
           bio: String,
+          avatar: String,
           twitter: String,
           linkedin: String
      }],

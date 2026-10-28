@@ -29,6 +29,12 @@ const footerSchema = new mongoose.Schema({
           title:String,
           buttonName:String
      },
+     locationContact: {
+          title: String,
+          address: String,
+          phone: String,
+          email: String
+     },
      socials: [{
           icon: {
                type: String

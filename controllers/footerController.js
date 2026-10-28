@@ -44,6 +44,12 @@ export const getFooterGlobalSettings = async (req) => {
                          title: "Let's build something great together",
                          buttonName: "Get in touch"
                     },
+                    locationContact: {
+                         title: "",
+                         address: "",
+                         phone: "",
+                         email: ""
+                    },
                     buttonname: "Refer & Earn",
                     buttontitle: "Follow us!",
                     copyright: "© 2026 - Weekend UX All Rights Reserved."
@@ -63,7 +69,7 @@ export const getFooterGlobalSettings = async (req) => {
 export const updateFooterGlobalSettings = async (req) => {
      try {
           await connectDB();
-          const { navigation, socials, buttonname, buttontitle, copyright, card } = await req.json();
+          const { navigation, socials, buttonname, buttontitle, copyright, card, locationContact } = await req.json();
           const updated = await Footer.findOneAndUpdate(
                { isGlobal: true },
                {
@@ -72,7 +78,8 @@ export const updateFooterGlobalSettings = async (req) => {
                     buttonname: buttonname || "",
                     buttontitle: buttontitle || "",
                     copyright: copyright || "",
-                    card: card || { title: "", buttonName: "" }
+                    card: card || { title: "", buttonName: "" },
+                    locationContact: locationContact || { title: "", address: "", phone: "", email: "" }
                },
                { new: true, upsert: true }
           );
