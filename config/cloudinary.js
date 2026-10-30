@@ -44,12 +44,14 @@ export const uploadToCloudinary = async (file, folder = "weekend_ux_media") => {
 
           const isThumbnail = folder.toLowerCase().includes("thumbnail");
           const isVideo = !isThumbnail && (folder.endsWith("/videos") || folder.endsWith("/video") || mimeType.startsWith("video/"));
-          const resourceType = isVideo ? "video" : "auto";
+          const isPdf = mimeType === "application/pdf" || originalName.toLowerCase().endsWith(".pdf");
+          const resourceType = isVideo ? "video" : (isPdf ? "raw" : "auto");
+          const publicId = isPdf ? `${uniqueId}.pdf` : uniqueId;
 
           return new Promise((resolve, reject) => {
                const uploadOptions = {
                     folder,
-                    public_id: uniqueId,
+                    public_id: publicId,
                     resource_type: resourceType
                };
 

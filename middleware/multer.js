@@ -10,17 +10,18 @@ const fileFilter = (req, file, cb) => {
      const originalName = file.originalname || "";
      const extension = originalName.split(".").pop()?.toLowerCase() || "";
 
-     const isAllowedMime = mime.startsWith("image/") || mime.startsWith("video/") || mime === "application/octet-stream";
+     const isAllowedMime = mime.startsWith("image/") || mime.startsWith("video/") || mime === "application/pdf" || mime === "application/octet-stream";
      const isAllowedExt = [
           "jpg", "jpeg", "png", "webp", "gif", "svg", "heic", "heif", "avif",
-          "mp4", "mov", "webm", "m4v", "avi", "3gp", "3gpp", "mkv", "ts"
+          "mp4", "mov", "webm", "m4v", "avi", "3gp", "3gpp", "mkv", "ts",
+          "pdf"
      ].includes(extension);
 
      if (isAllowedMime || isAllowedExt) {
           return cb(null, true);
      }
 
-     cb(new Error(`Invalid file type .${extension} (${mime}). Please upload a valid image or video.`));
+     cb(new Error(`Invalid file type .${extension} (${mime}). Please upload a valid image, video, or PDF.`));
 };
 
 const upload = multer({

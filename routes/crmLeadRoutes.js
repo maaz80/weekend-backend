@@ -12,12 +12,23 @@ import {
   deleteLead
 } from "../controllers/crmLeadController.js";
 import { getCrmPermissions, updateCrmPermissions } from "../controllers/crmAuthController.js";
+import {
+  getNewUserInformationCount,
+  getUserInformation,
+  markUserInformationReviewed
+} from "../controllers/crmUserInformationController.js";
+import { requireCrmAdmin } from "../middleware/crmAuth.js";
 
 const router = express.Router();
 
 // CRM Permissions routes
 router.get("/permissions", getCrmPermissions);
 router.put("/permissions", updateCrmPermissions);
+
+// Applicant profiles are restricted to authenticated CRM administrators.
+router.get("/user-information/count", requireCrmAdmin, getNewUserInformationCount);
+router.get("/user-information", requireCrmAdmin, getUserInformation);
+router.patch("/user-information/:userId/review", requireCrmAdmin, markUserInformationReviewed);
 
 // Lead Analytics & Sync routes
 router.get("/analytics", getAnalytics);

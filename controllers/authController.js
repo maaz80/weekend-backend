@@ -11,14 +11,20 @@ const generateToken = (id) => {
      });
 };
 
+const hasCompletedProfile = (user) =>
+     user.profileCompleted === true && Boolean(user.profileSubmittedAt);
+
 export const signup = async (req) => {
      try {
           await connectDB();
-          const { name, email, otp } = await req.json();
+          const { name, email, phone, otp } = await req.json();
 
           // Validation
-          if (!name || !email || !otp) {
-               return NextResponse.json({ error: "Please provide name, email, and OTP" }, { status: 400 });
+          if (!name || !email || !phone || !otp) {
+               return NextResponse.json({ error: "Please provide name, email, phone, and OTP" }, { status: 400 });
+          }
+          if (!/^\d{10}$/.test(String(phone))) {
+               return NextResponse.json({ error: "Please provide a valid 10-digit phone number" }, { status: 400 });
           }
 
           // Check if OTP is valid
@@ -41,7 +47,9 @@ export const signup = async (req) => {
           const user = await User.create({
                name,
                email,
+               phone,
                password: randomPassword,
+               profileCompleted: false,
           });
 
           // Delete OTP record
@@ -57,6 +65,7 @@ export const signup = async (req) => {
                     id: user._id,
                     name: user.name,
                     email: user.email,
+                    profileCompleted: hasCompletedProfile(user),
                },
           }, { status: 201 });
      } catch (error) {
@@ -102,6 +111,7 @@ export const login = async (req) => {
                     id: user._id,
                     name: user.name,
                     email: user.email,
+                    profileCompleted: hasCompletedProfile(user),
                },
           });
      } catch (error) {
@@ -155,11 +165,97 @@ export const getMe = async (req) => {
                     id: user._id,
                     name: user.name,
                     email: user.email,
+                    phone: user.phone || "",
+                    profileCompleted: hasCompletedProfile(user),
+                    profileDetails: user.profileDetails || {},
                     enrolledCourses: populatedEnrolled,
                },
           });
      } catch (error) {
           return NextResponse.json({ error: error.message }, { status: 500 });
+     }
+};
+
+export const updateUserProfile = async (req) => {
+     try {
+          await connectDB();
+          if (!req.user) {
+               return NextResponse.json({ error: "Not authorized" }, { status: 401 });
+          }
+
+          const { profileDetails, termsAccepted } = await req.json();
+          const requiredFields = [
+               "firstName",
+               "lastName",
+               "gender",
+               "dateOfBirth",
+               "mobileNumber",
+               "country",
+               "streetAddress",
+               "city",
+               "postalCode",
+               "citizenship",
+               "workExperience",
+               "highestDegree",
+               "degreeInstitution",
+               "graduationMonthYear",
+          ];
+
+          if (!profileDetails || typeof profileDetails !== "object") {
+               return NextResponse.json({ error: "Please provide your profile information" }, { status: 400 });
+          }
+
+          const cleanedProfile = Object.fromEntries(
+               Object.entries(profileDetails).map(([key, value]) => [
+                    key,
+                    typeof value === "string" ? value.trim() : value,
+               ])
+          );
+          const missingField = requiredFields.find((field) => !cleanedProfile[field]);
+
+          if (missingField) {
+               return NextResponse.json({ error: "Please complete all required profile fields" }, { status: 400 });
+          }
+          if (!/^\d{10}$/.test(cleanedProfile.mobileNumber)) {
+               return NextResponse.json({ error: "Please provide a valid 10-digit mobile number" }, { status: 400 });
+          }
+          if (Number.isNaN(Date.parse(cleanedProfile.dateOfBirth)) || new Date(cleanedProfile.dateOfBirth) > new Date()) {
+               return NextResponse.json({ error: "Please provide a valid date of birth" }, { status: 400 });
+          }
+          if (!termsAccepted) {
+               return NextResponse.json({ error: "Please accept the applicant terms before submitting" }, { status: 400 });
+          }
+          if (cleanedProfile.linkedinProfile) {
+               try {
+                    const linkedinUrl = new URL(cleanedProfile.linkedinProfile);
+                    if (!["http:", "https:"].includes(linkedinUrl.protocol)) {
+                         throw new Error("Invalid URL protocol");
+                    }
+               } catch {
+                    return NextResponse.json({ error: "Please provide a valid LinkedIn profile URL" }, { status: 400 });
+               }
+          }
+
+          req.user.profileDetails = cleanedProfile;
+          req.user.name = `${cleanedProfile.firstName} ${cleanedProfile.lastName}`.trim();
+          req.user.phone = cleanedProfile.mobileNumber;
+          req.user.profileCompleted = true;
+          req.user.profileSubmittedAt = new Date();
+          req.user.profileTermsAcceptedAt = new Date();
+          req.user.profileReviewedAt = null;
+          await req.user.save();
+
+          return NextResponse.json({
+               success: true,
+               user: {
+                    id: req.user._id,
+                    profileCompleted: req.user.profileCompleted,
+                    profileDetails: req.user.profileDetails,
+               },
+          });
+     } catch (error) {
+          console.error("User profile submission error:", error);
+          return NextResponse.json({ error: error.message || "Failed to save profile information" }, { status: 500 });
      }
 };
 

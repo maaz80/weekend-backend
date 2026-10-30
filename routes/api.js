@@ -1,7 +1,7 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import upload from "../middleware/multer.js";
-import { requireAdminForWrites } from "../middleware/adminAuth.js";
+import { requireAdmin, requireAdminForWrites } from "../middleware/adminAuth.js";
 import { sanitizeRequest } from "../middleware/security.js";
 import { otpRateLimit } from "../middleware/otpRateLimit.js";
 import { protectUser } from "../middleware/userAuth.js";
@@ -42,6 +42,7 @@ import * as testimonialController from "../controllers/testimonialController.js"
 import * as leadController from "../controllers/leadController.js";
 import * as meetController from "../controllers/meetController.js";
 import { receiveJob, getJobs } from "../controllers/jobController.js";
+import * as brochureController from "../controllers/brochureController.js";
 import whatsappRoutes from "./whatsappRoutes.js";
 import instagramRoutes from "./instagramRoutes.js";
 import crmLeadRoutes from "./crmLeadRoutes.js";
@@ -114,6 +115,8 @@ export const makeExpressRoute = (controllerFn) => {
         headers: {
           get: (name) => req.headers[name.toLowerCase()] || null,
         },
+        user: req.user,
+        params: req.params || {},
         json: async () => req.body,
         formData: async () => new MockFormData(req),
         clone: function() {
@@ -178,6 +181,9 @@ router.put("/corporate-training", requireAdminForWrites, upload.any(), makeExpre
 // 2. Admin
 router.post("/admin/login", authLimiter, makeExpressRoute(adminController.loginAdmin));
 router.get("/admin/users", requireAdminForWrites, makeExpressRoute(adminController.getUsers));
+router.get("/admin/user-information/count", requireAdmin, makeExpressRoute(adminController.getNewUserInformationCount));
+router.get("/admin/user-information", requireAdmin, makeExpressRoute(adminController.getUserInformation));
+router.patch("/admin/user-information/:userId/review", requireAdminForWrites, makeExpressRoute(adminController.markUserInformationReviewed));
 router.post("/admin/users/assign-course", requireAdminForWrites, makeExpressRoute(adminController.assignCourseToUser));
 router.post("/admin/users/revoke-course", requireAdminForWrites, makeExpressRoute(adminController.revokeCourseFromUser));
 router.post("/admin/send-meet-link", requireAdminForWrites, makeExpressRoute(meetController.sendCourseMeetLink));
@@ -203,6 +209,7 @@ router.post("/auth/forgot-password", authLimiter, makeExpressRoute(authControlle
 router.post("/auth/login", authLimiter, makeExpressRoute(authController.login));
 router.post("/auth/logout", makeExpressRoute(authController.logout));
 router.get("/auth/me", makeExpressRoute(authController.getMe));
+router.put("/auth/profile", protectUser, makeExpressRoute(authController.updateUserProfile));
 router.post("/auth/reset-password", authLimiter, makeExpressRoute(authController.resetPassword));
 router.post("/auth/send-otp", authLimiter, makeExpressRoute(authController.sendAuthOTP));
 router.post("/auth/signup", authLimiter, makeExpressRoute(authController.signup));
@@ -239,6 +246,12 @@ router.delete("/footer-columns/:id", requireAdminForWrites, makeExpressRoute(foo
 // 9. Home
 router.get("/home", makeExpressRoute(homeController.getHome));
 router.put("/home", requireAdminForWrites, upload.any(), makeExpressRoute(homeController.updateHome));
+
+// Brochure PDF (Auto-download & open on lead submissions)
+router.get("/brochure", brochureController.getBrochure);
+router.post("/admin/brochure", requireAdminForWrites, upload.single("pdf"), brochureController.uploadBrochure);
+router.put("/admin/brochure", requireAdminForWrites, upload.single("pdf"), brochureController.uploadBrochure);
+router.delete("/admin/brochure", requireAdminForWrites, brochureController.deleteBrochure);
 
 // 10. Locations & Location Items
 router.get("/locations", makeExpressRoute(locationController.getLocations));

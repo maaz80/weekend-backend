@@ -1,4 +1,5 @@
 import "dotenv/config";
+import path from "path";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -126,6 +127,9 @@ connectDB()
      .catch((err) => {
           console.error("Failed to connect to database on startup:", err);
      });
+
+// Serve static uploads (for PDF brochures fallback and local assets)
+app.use("/uploads", express.static(path.join(process.cwd(), "public", "uploads")));
 
 // Base Route
 app.use("/api", apiRouter);

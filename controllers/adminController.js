@@ -87,6 +87,77 @@ export const getUsers = async (req) => {
      }
 };
 
+export const getUserInformation = async () => {
+     try {
+          const connectDB = (await import("../config/db.js")).default;
+          const User = (await import("../models/Auth.js")).default;
+          await connectDB();
+
+          const profileFilter = {
+               profileCompleted: true,
+               profileSubmittedAt: { $ne: null },
+          };
+          const [profiles, newCount] = await Promise.all([
+               User.find(profileFilter)
+                    .select("name email phone profileDetails profileSubmittedAt profileReviewedAt createdAt")
+                    .sort({ profileSubmittedAt: -1 })
+                    .lean(),
+               User.countDocuments({ ...profileFilter, profileReviewedAt: null }),
+          ]);
+
+          return NextResponse.json({ success: true, profiles, newCount });
+     } catch (error) {
+          console.error("Get user information error:", error);
+          return NextResponse.json({ error: error.message || "Failed to load user information" }, { status: 500 });
+     }
+};
+
+export const getNewUserInformationCount = async () => {
+     try {
+          const connectDB = (await import("../config/db.js")).default;
+          const User = (await import("../models/Auth.js")).default;
+          await connectDB();
+
+          const newCount = await User.countDocuments({
+               profileCompleted: true,
+               profileSubmittedAt: { $ne: null },
+               profileReviewedAt: null,
+          });
+
+          return NextResponse.json({ success: true, newCount });
+     } catch (error) {
+          console.error("Get new user information count error:", error);
+          return NextResponse.json({ error: error.message || "Failed to load new user count" }, { status: 500 });
+     }
+};
+
+export const markUserInformationReviewed = async (req) => {
+     try {
+          const connectDB = (await import("../config/db.js")).default;
+          const User = (await import("../models/Auth.js")).default;
+          await connectDB();
+
+          const userId = req.params?.userId;
+          const user = await User.findOne({
+               _id: userId,
+               profileCompleted: true,
+               profileSubmittedAt: { $ne: null },
+          });
+
+          if (!user) {
+               return NextResponse.json({ error: "Submitted user information not found" }, { status: 404 });
+          }
+
+          user.profileReviewedAt = new Date();
+          await user.save();
+
+          return NextResponse.json({ success: true });
+     } catch (error) {
+          console.error("Mark user information reviewed error:", error);
+          return NextResponse.json({ error: error.message || "Failed to update review status" }, { status: 500 });
+     }
+};
+
 export const assignCourseToUser = async (req) => {
      try {
           const connectDB = (await import("../config/db.js")).default;

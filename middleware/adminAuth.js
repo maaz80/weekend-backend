@@ -112,6 +112,10 @@ export const requireAdminForWrites = (req, res, next) => {
           return next();
      }
 
+     return requireAdmin(req, res, next);
+};
+
+export const requireAdmin = (req, res, next) => {
      const adminApiKey = process.env.ADMIN_API_KEY;
 
      if (!adminApiKey) {

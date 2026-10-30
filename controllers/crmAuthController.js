@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import CrmSetting from "../models/CrmSetting.js";
+import { createCrmToken, verifyCrmToken } from "../middleware/crmAuth.js";
 
 const DEFAULT_PERMISSIONS = {
   kanban: true,
@@ -104,6 +105,12 @@ export const loginCrm = async (req, res) => {
         error: "Invalid CRM username or password. Please verify credentials."
       });
     }
+    if (!process.env.CRM_TOKEN_SECRET && !process.env.ADMIN_API_KEY && !process.env.JWT_SECRET) {
+      return res.status(503).json({
+        success: false,
+        error: "CRM token signing is not configured."
+      });
+    }
 
     // Fetch current feature permissions
     let settingDoc = await CrmSetting.findOne({ key: "feature_permissions" }).lean();
@@ -118,11 +125,9 @@ export const loginCrm = async (req, res) => {
     // Create 30-day session token
     const tokenPayload = {
       role: authenticatedRole,
-      user: username.trim(),
-      portal: "crm",
-      exp: Date.now() + 30 * 24 * 60 * 60 * 1000
+      user: username.trim()
     };
-    const token = Buffer.from(JSON.stringify(tokenPayload)).toString("base64");
+    const token = createCrmToken(tokenPayload);
 
     return res.status(200).json({
       success: true,
@@ -149,10 +154,9 @@ export const verifyToken = async (req, res) => {
     }
 
     const token = authHeader.split(" ")[1];
-    const decoded = JSON.parse(Buffer.from(token, "base64").toString("utf8"));
-
-    if (decoded.exp && decoded.exp < Date.now()) {
-      return res.status(401).json({ success: false, error: "Token expired" });
+    const decoded = verifyCrmToken(token);
+    if (!decoded) {
+      return res.status(401).json({ success: false, error: "Invalid or expired token" });
     }
 
     return res.status(200).json({ success: true, valid: true, user: decoded });

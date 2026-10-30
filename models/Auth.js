@@ -19,6 +19,51 @@ const userSchema = new mongoose.Schema(
                     "Please provide a valid email address",
                ],
           },
+          phone: {
+               type: String,
+               trim: true,
+               default: "",
+          },
+          profileCompleted: {
+               type: Boolean,
+               default: true,
+          },
+          profileDetails: {
+               type: new mongoose.Schema(
+                    {
+                         title: { type: String, trim: true, default: "" },
+                         firstName: { type: String, trim: true, default: "" },
+                         lastName: { type: String, trim: true, default: "" },
+                         gender: { type: String, trim: true, default: "" },
+                         dateOfBirth: { type: String, trim: true, default: "" },
+                         mobileNumber: { type: String, trim: true, default: "" },
+                         country: { type: String, trim: true, default: "" },
+                         streetAddress: { type: String, trim: true, default: "" },
+                         city: { type: String, trim: true, default: "" },
+                         postalCode: { type: String, trim: true, default: "" },
+                         citizenship: { type: String, trim: true, default: "" },
+                         workExperience: { type: String, trim: true, default: "" },
+                         linkedinProfile: { type: String, trim: true, default: "" },
+                         highestDegree: { type: String, trim: true, default: "" },
+                         degreeInstitution: { type: String, trim: true, default: "" },
+                         graduationMonthYear: { type: String, trim: true, default: "" },
+                    },
+                    { _id: false }
+               ),
+               default: () => ({}),
+          },
+          profileSubmittedAt: {
+               type: Date,
+               default: null,
+          },
+          profileTermsAcceptedAt: {
+               type: Date,
+               default: null,
+          },
+          profileReviewedAt: {
+               type: Date,
+               default: null,
+          },
           password: {
                type: String,
                required: [true, "Please provide a password"],
